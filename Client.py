@@ -388,9 +388,9 @@ def run_app():
 
 def main():
     global log
-    log = Log("SuperClient", True, "logs/log_client.txt", 100, enable=False)
+    log = Log("SuperClient", True, "logs/log_client.log", 100, enable=False)
     global eventLog
-    eventLog = Log("SuperClientEvents", False, "logs/log_client_events.txt", 220, enable=False)
+    eventLog = Log("SuperClientEvents", False, "logs/log_client_events.log", 220, enable=False)
     eventLog.add("Lancement application...")
     # noinspection PyBroadException
     try:

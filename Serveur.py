@@ -571,9 +571,9 @@ def run_app():
 
 def main():
     global log
-    log = Log(tag="SuperServeur", file_path="logs/log_server.txt", n_entries_before_save=10, enable=True)
+    log = Log(tag="SuperServeur", file_path="logs/log_server.log", n_entries_before_save=10, enable=True)
     global eventLog
-    eventLog = Log("SuperServeurEvents", False, "logs/log_server_events.txt", 200, enable=True)
+    eventLog = Log("SuperServeurEvents", False, "logs/log_server_events.log", 200, enable=True)
     eventLog.add("Lancement application...")
     # noinspection PyBroadException
     try:

@@ -1,9 +1,4 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-
-# PyCharm files
-.idea/
-
-
-# Log files
 *.log
+*.pyc
+*.xml
+*.yml
