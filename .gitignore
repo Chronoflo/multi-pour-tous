@@ -1,6 +1,1 @@
-.idea/*
-logs/log_server.txt
-logs/log_server.txt
-logs/log_server_events.txt
-__pycache__/handyfunctions.cpython-36.pyc
-__pycache__/Serveur.cpython-36.pyc
+/.idea/*
