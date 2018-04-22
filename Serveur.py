@@ -69,7 +69,7 @@ class MyApplication(MyTkApp):
     """MyApplication est le composant principal d'une application qui hérite de MyTkApp. Il contient plusieurs méthodes
     et attributs généraux."""
 
-    def __init__(self, theme=Themes.default(), log=None):
+    def __init__(self, theme=Themes.default()):
         """Construit une application avec le parent master.
         Attributs:
         -serverThread : fait référence à une ServerThread
@@ -77,9 +77,9 @@ class MyApplication(MyTkApp):
         -connectedClients : Liste qui contient tous les clients s'étant connectés au serveur
         -mainFrame : Frame qui englobe tous les autres widgets"""
         if theme is not None:
-            super().__init__(theme, log=log)
+            super().__init__(theme)
         else:
-            super().__init__(log=log)
+            super().__init__()
         # self.image = Image.open("forest.jpg")
         self._serverThread: ServerThread = None
 
@@ -91,7 +91,7 @@ class MyApplication(MyTkApp):
         self.theme: dict = self.theme  # self.theme est un attribut  hérité
 
         self.bind('<Key>', self.print_key)
-        self.to_log("Application démarrée.")
+        log.add("Application démarrée.")
 
     def print_key(self, event):
         """TODO: tmp"""
