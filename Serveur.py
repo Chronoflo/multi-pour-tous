@@ -90,12 +90,10 @@ class MyApplication(MyTkApp):
         self.mainFrame: MyFrame = None
         self.theme: dict = self.theme  # self.theme est un attribut  hérité
 
-        self.bind('<Key>', self.print_key)
+        def print_key(event):
+            print(event.keysym)
+        self.bind('<Key>', print_key)
         log.add("Application démarrée.")
-
-    def print_key(self, event):
-        """TODO: tmp"""
-        print(event.keysym)
 
     def initialize_ihm(self):
         """Initialise toute l'IHM."""
