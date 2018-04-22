@@ -1,4 +1,4 @@
-*.log
-*.pyc
+﻿
 *.xml
-*.yml
+*.log
+*.xml
