@@ -378,7 +378,7 @@ class SendDataThread(Thread):
         log.add("SendDataThread terminée")
 
 
-def main():
+def run_app():
     app = Application()
     app.initialize_ihm()
     app.connect_to_server(ADDRESS, PORT)
@@ -386,13 +386,15 @@ def main():
     app.mainloop()
 
 
-if __name__ == '__main__':
+def main():
+    global log
     log = Log("SuperClient", True, "logs/log_client.txt", 100, enable=False)
+    global eventLog
     eventLog = Log("SuperClientEvents", False, "logs/log_client_events.txt", 220, enable=False)
     eventLog.add("Lancement application...")
     # noinspection PyBroadException
     try:
-        main()
+        run_app()
     except Exception as e:
         print(e)
         log.add('\n' +
@@ -405,3 +407,7 @@ if __name__ == '__main__':
         InfiniteTimer.kill_threads()
         Log.terminate_all()
         Log.final_save_all()
+
+
+if __name__ == '__main__':
+    main()
