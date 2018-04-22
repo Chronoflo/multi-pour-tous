@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: <utf-8> -*-
 # -------------------------------------------------------------------------------
-# Name:        module1
-# Purpose:
+# Name:        Launch_Client
+# Purpose:     Lancer le client
 #
 # Author:      Florian
 #
@@ -10,10 +10,9 @@
 # Copyright:   (c) Florian 2018
 # Licence:     <your licence>
 # -------------------------------------------------------------------------------
-# noinspection PyBroadException
-import Serveur
+import Client
 
 if __name__ == '__main__':
-    Serveur.main()
+    Client.main()
 else:
-    print("Launch_Serveur shouldn't be called from another module.")
+    print("Launch_Client shouldn't be called from another module.")
