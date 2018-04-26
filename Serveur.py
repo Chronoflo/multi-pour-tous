@@ -141,12 +141,6 @@ class MyApplication(MyTkApp):
             pass
         log.add("Application terminée.")
 
-    def test(self):
-        """Montre comment se servir de la méthode after de tkinter pour avoir un appel récurrent avec un certain
-        intervalle de temps déterminés."""
-        log.add("lol")
-        self.after(0, self.test())
-
     def wait_for_threads_to_finish(self):
         self._serverThread.join()
         for client in self.connectedClients:
@@ -415,7 +409,7 @@ class IHM(MyFrame):
                                                                                          row=g.same(),
                                                                                          sticky='ew')
         MyButton(self.buttons_group, text="Quit", command=self.master.terminate).grid(column=mid_clmn, row=g.next(),
-                                                                                   sticky='ew')
+                                                                                      sticky='ew')
         configure_columns_rows(self.buttons_group, 5, g.get_n_given_ids(), clmn_weights=[1, 6, 6, 6, 1])
         del g
         # Fin buttons_frame
@@ -569,9 +563,9 @@ def run_app():
 
 def main():
     global log
-    log = Log(tag="SuperServeur", file_path="logs/log_server.log", n_entries_before_save=10, enable=True)
+    log = Log(tag="SuperServeur", file_path="logs/log_server.log", n_entries_before_save=5)
     global eventLog
-    eventLog = Log("SuperServeurEvents", False, "logs/log_server_events.log", 200, enable=True)
+    eventLog = Log("SuperServeurEvents", False, "logs/log_server_events.log", 25)
     eventLog.add("Lancement application...")
     # Lance l'application.
     safe_launch(run_app, log, eventLog)
@@ -579,4 +573,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

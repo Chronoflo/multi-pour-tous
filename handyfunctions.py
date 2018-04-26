@@ -396,7 +396,7 @@ class InfiniteTimer:
             pass
 
 
-class Log(InfiniteTimer):
+class Log:
     """Thread chargée de rapporter chaque évènement notable. Il faut appeler .add()
     pour ajouter de nouvelles entrées."""
     _created_logs = list()
@@ -414,29 +414,22 @@ class Log(InfiniteTimer):
         """Sauvegarde finale de tous les logs crées."""
         for log in cls._created_logs:
             log.final_save()
+        for log in cls._created_logs:
+            print("//FIN_LOG '{}'".format(log.name))
 
-    @classmethod
-    def terminate_all(cls):
-        """Tue tous les logs démarrés."""
-        for log in cls._started_logs:
-            log.cancel()
-
-    def __init__(self, tag: str, should_print: bool=True, file_path: str=None, n_entries_before_save: int=20,
-                 enable=True):
+    def __init__(self, tag: str, should_print: bool=True, file_path: str=None, n_entries_before_save: int=20):
         """
         Crée un Log.
         :param tag: identifiant du log (doit être unique)
         :param should_print:
         :param file_path:
         :param n_entries_before_save:
-        :param enable: Si vrai, le log est pas démarré
         """
         if isinstance(tag, str):
             if tag in Log._used_ids:
                 raise ValueError('Ce tag est déjà utilisé.')
             else:
                 Log._used_ids.add(tag)
-            super().__init__(seconds=0.5, target=self.run, name="Log_"+tag)
             self.name = "Log_" + tag
             self._TAG: str = tag
             self._shouldPrint: bool = should_print
@@ -450,17 +443,9 @@ class Log(InfiniteTimer):
             self.nEntriesBeforeSave: int = n_entries_before_save
             self._lock = Lock()
             Log._created_logs.append(self)
-            if enable:
-                self.start()
-                Log._started_logs.append(self)
+            print("//DÉBUT_LOG '{}'".format(self.name))
         else:
             raise TypeError("'tag' devrait être de type str. Type actuel : " + str(type(tag)))
-
-    def run(self):
-        """Appelé en boucle tant que cancel n'a pas été appelé."""
-        if self._hasToRun:
-            if len(self.entriesOnMem) >= self.nEntriesBeforeSave and self._filePath is not None:
-                self.save()
 
     def add(self, msg):
         """Ajoute une entrée au log."""
@@ -471,17 +456,25 @@ class Log(InfiniteTimer):
             if self._shouldPrint:
                 print(line)
             self.entriesOnMem.append(line)
+            if len(self.entriesOnMem) >= self.nEntriesBeforeSave and self._filePath is not None:
+                self.save(lock_already_acquired=True)
 
-    def save(self):
+    def save(self, lock_already_acquired=False):
         """Sauvegarde toutes les entrées contenues dans entriesOnMem"""
         if self._filePath is not None:
-            with self._lock:
-                try:
-                    write_to_file(self._filePath, "".join([entry + "\n" for entry in self.entriesOnMem]))
-                    self.entriesOnMem.clear()
-                    print("//SAUVEGARDE '{}'".format(self.name))
-                except PermissionError:
-                    print("//ÉCHEC SAUVEGARDE")
+            if lock_already_acquired:
+                self._try_to_save()
+            else:
+                with self._lock:
+                    self._try_to_save()
+
+    def _try_to_save(self):
+        try:
+            write_to_file(self._filePath, "".join([entry + "\n" for entry in self.entriesOnMem]))
+            self.entriesOnMem.clear()
+            print("//SAUVEGARDE '{}'".format(self.name))
+        except PermissionError:
+            print("//ÉCHEC SAUVEGARDE")
 
     def final_save(self):
         if self._filePath is not None:
@@ -495,17 +488,6 @@ class Log(InfiniteTimer):
                     print("//SAUVEGARDE FINALE '{}'".format(self.name))
                 except PermissionError:
                     print("//ÉCHEC SAUVEGARDE. NOUVEL ESSAI...")
-
-    def start(self):
-        print("//DÉBUT_LOG '{}'".format(self.name))
-        super().start()
-
-    def cancel(self):
-        """Termine la thread."""
-        if self._hasToRun:
-            super().cancel()
-            self._hasToRun = False
-            print("//FIN_LOG '{}'".format(self.name))
 
 
 def is_slash(char: str):
@@ -604,7 +586,6 @@ def safe_launch(func, log, event_log):
     finally:
         event_log.add("Fin application.")
         InfiniteTimer.kill_threads()
-        Log.terminate_all()
         Log.final_save_all()
 
 

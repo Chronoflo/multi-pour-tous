@@ -388,9 +388,9 @@ def run_app():
 
 def main():
     global log
-    log = Log("SuperClient", True, "logs/log_client.log", 100, enable=False)
+    log = Log("SuperClient", True, "logs/log_client.log", 10)
     global eventLog
-    eventLog = Log("SuperClientEvents", False, "logs/log_client_events.log", 220, enable=False)
+    eventLog = Log("SuperClientEvents", False, "logs/log_client_events.log", 25)
     eventLog.add("Lancement application...")
     # Lance l'application.
     safe_launch(run_app, log, eventLog)
