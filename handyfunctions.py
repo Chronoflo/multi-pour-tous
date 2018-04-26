@@ -4,6 +4,7 @@ import traceback
 from datetime import datetime
 from threading import Timer, Lock
 from socket import gethostname
+from os import makedirs
 import tkinter as tk
 
 ADDRESS = gethostname()
@@ -14,8 +15,9 @@ MOUSE = 2
 
 line_width = len("//SuperServeur::2018/04/06::00:03:48 : Application terminée.") * 3
 
-log = None
-eventLog = None
+# log = None
+# eventLog = None
+
 
 class Themes:
     """Classe qui contient différents sets de couleurs afin de facilement configurer l'apparence de l'application"""
@@ -419,7 +421,6 @@ class Log(InfiniteTimer):
         for log in cls._started_logs:
             log.cancel()
 
-
     def __init__(self, tag: str, should_print: bool=True, file_path: str=None, n_entries_before_save: int=20,
                  enable=True):
         """
@@ -442,6 +443,7 @@ class Log(InfiniteTimer):
 
             self._filePath: str = file_path
             if self._filePath is not None:
+                check_path(file_path)
                 with open(self._filePath, 'a') as f:
                     f.write(make_line('~'))
 
@@ -513,6 +515,31 @@ class Log(InfiniteTimer):
             print("//FIN_LOG '{}'".format(self.name))
 
 
+def is_slash(char: str):
+    """Retourne Vrai si char est un slash."""
+    char = str(char)
+    if len(char) == 1:
+        return char == '/' or char == '\\'
+    else:
+        raise ValueError("char should be a single character.")
+
+
+def check_path(path):
+    """Vérifie que le chemin existe et crée les dossiers nécessaires le cas échéant."""
+    path = str(path)
+    path_to_check = ""
+    # Récupère le chemin jusqu'au dernier slash
+    for i, letter in enumerate(path[::-1]):
+            if is_slash(letter):
+                path_to_check = path[:-i]
+                break
+    # Crée les dossiers correspondants s'ils n'existent pas déjà.
+    if path_to_check:
+        makedirs(path_to_check, exist_ok=True)
+    else:
+        print("Il n'y avait pas de dossiers à vérifier.")
+
+
 def configure_columns_rows(tk_obj, n_columns: int, n_rows: int, clmn_weights: list = None, row_weights: list = None):
     """"Facilite la configuration des colonnes et des lignes de grid d'un objet Tk."""
     if clmn_weights is not None:
@@ -559,7 +586,7 @@ def make_line(char, end='\n'):
         raise ValueError("char should be a single character.")
 
 
-def formated_error(error):
+def formatted_error(error):
     return  ('\n'
             + make_line('.')
             + traceback.format_exc()
