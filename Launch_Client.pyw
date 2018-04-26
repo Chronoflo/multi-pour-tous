@@ -2,7 +2,7 @@
 # -*- coding: <utf-8> -*-
 # -------------------------------------------------------------------------------
 # Name:        Launch_Client
-# Purpose:     lancer le client
+# Purpose:     Lancer le client
 #
 # Author:      Florian
 #
@@ -15,4 +15,4 @@ import Client
 if __name__ == '__main__':
     Client.main()
 else:
-    print("Launch_Client ne devrait pas être appelés depuis un autre module.")
+    print("Launch_Client shouldn't be called from another module.")
