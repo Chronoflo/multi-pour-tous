@@ -475,29 +475,24 @@ class Log(InfiniteTimer):
             self.entriesOnMem.append(line)
 
     def save(self):
-        """Sauvegarde toutes les entrées contenues dans """
-        with self._lock:
-            try:
-                with open(self._filePath, 'a') as f:
-                    for entry in self.entriesOnMem:
-                        f.write(entry + "\n")
+        """Sauvegarde toutes les entrées contenues dans entriesOnMem"""
+        if self._filePath is not None:
+            with self._lock:
+                try:
+                    write_to_file(self._filePath, "".join([entry + "\n" for entry in self.entriesOnMem]))
                     self.entriesOnMem.clear()
-                print("//SAUVEGARDE '{}'".format(self.name))
-            except PermissionError:
-                print("//ÉCHEC SAUVEGARDE")
-            else:
-                self.entriesOnMem.clear()
+                    print("//SAUVEGARDE '{}'".format(self.name))
+                except PermissionError:
+                    print("//ÉCHEC SAUVEGARDE")
 
     def final_save(self):
         if self._filePath is not None:
             is_final_save_successful = False
             while not is_final_save_successful:
                 try:
-                    with open(self._filePath, 'a') as f:
-                        for entry in self.entriesOnMem:
-                            f.write(entry + "\n")
-                        for i in range(1):
-                            f.write(make_line('~', end='\n'))
+                    write_to_file(self._filePath,
+                                  "".join([entry + "\n" for entry in self.entriesOnMem])
+                                  + make_line('~', end='\n'))
                     is_final_save_successful = True
                     print("//SAUVEGARDE FINALE '{}'".format(self.name))
                 except PermissionError:
@@ -538,6 +533,22 @@ def check_path(path):
         makedirs(path_to_check, exist_ok=True)
     else:
         print("Il n'y avait pas de dossiers à vérifier.")
+
+
+def is_success(boolean):
+    """Rend le code plus lisible."""
+    return bool(boolean)
+
+
+def write_to_file(path, data):
+    """Écrit data dans le fichier spécifié."""
+    if path is not None:
+        check_path(path)
+        with open(path, 'a') as f:
+            f.write(data)
+        return True
+    else:
+        return False
 
 
 def configure_columns_rows(tk_obj, n_columns: int, n_rows: int, clmn_weights: list = None, row_weights: list = None):
