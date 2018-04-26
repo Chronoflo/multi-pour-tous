@@ -443,9 +443,7 @@ class Log(InfiniteTimer):
 
             self._filePath: str = file_path
             if self._filePath is not None:
-                check_path(file_path)
-                with open(self._filePath, 'a') as f:
-                    f.write(make_line('~'))
+                write_to_file(self._filePath, make_line('~'))
 
             self._hasToRun: bool = True
             self.entriesOnMem: list = []
