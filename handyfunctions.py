@@ -53,6 +53,19 @@ class Themes:
     }
 
 
+class UserNames:
+    i_next_name_to_give = 0
+    names = ['Robert', 'Sartres', 'Oui-Oui', 'Jean-Phillipe', 'Gros Jean']
+    for index, user in names:
+        names[index] = user, 'free'
+    print(names)
+
+
+
+
+
+
+
 class ListIterator(object):
     """Itérateur qui renvoie les différents éléments d'une liste, l'un après l'autre"""
 

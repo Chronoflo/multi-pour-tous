@@ -68,7 +68,6 @@ class Application(MyTkApp):
             pass
             # self._socket.send('k' + event.keysym)
 
-
     def initialize_ihm(self):
         """Initialise toute l'IHM."""
         self.title("SuperClient")
