@@ -578,8 +578,11 @@ def make_line(char, end='\n'):
         raise ValueError("char should be a single character.")
 
 
-def formatted_error(error):
+def formatted_error(error=traceback.format_exc()):
     """Retourne une erreur encadrée par des lignes de points."""
+    # Ajoute un retour à la ligne à la fin de error s'il n'y en a pas déjà un
+    if error[-1:] != '\n':
+        error += '\n'
     return ('\n'
             + make_line('.')
             + error

@@ -11,6 +11,9 @@
 # Licence:     <your licence>
 # -------------------------------------------------------------------------------
 # noinspection PyBroadException
+import sys
+from tkinter import messagebox
+
 try:
     from threading import Thread
     from datetime import datetime
@@ -481,20 +484,26 @@ class ServerThread(Thread):
         self._serverSocket = s.socket(s.AF_INET, s.SOCK_STREAM)
 
     def run(self):
-        self._serverSocket.bind((self._address, self._port))
-        self._serverSocket.listen(5)
-        log.add("Serveur connecté. (adresse:{}, port:{})".format(self._address, self._port))
+        try:
+            self._serverSocket.bind((self._address, self._port))
+            self._serverSocket.listen(5)
+            log.add("Serveur connecté. (adresse:{}, port:{})".format(self._address, self._port))
 
-        while self._app.isRunning:
-            if self._isListening:
-                # Reste à l'écoute de nouvelles connections
-                try:
-                    clientsocket, address = self._serverSocket.accept()
-                    log.add("Connexion reçue de %s" % str(address))
-                    self._app.connectedClients.append(Client(self._app, clientsocket))
-                except OSError:
-                    log.add("Serveur déconnecté.")
-                    break
+            while self._app.isRunning:
+                if self._isListening:
+                    # Reste à l'écoute de nouvelles connections
+                    try:
+                        clientsocket, address = self._serverSocket.accept()
+                        log.add("Connexion reçue de %s" % str(address))
+                        self._app.connectedClients.append(Client(self._app, clientsocket))
+                    except OSError:
+                        log.add("Serveur déconnecté.")
+                        break
+        except OSError as error:
+            log.add(formatted_error("Error : " + error.strerror))
+            messagebox.showerror("Mise en place serveur",
+                                 "Une erreur est survenue, êtes vous sûr qu'un autre serveur ne tourne pas déjà?")
+            self._app.terminate()
 
     def resume(self):
         self._isListening = True
