@@ -1,11 +1,23 @@
 #!/usr/bin/python
 # -*- coding: <utf-8> -*-
+
+
+def pip_install(package_name: str):
+    """Installe un paquet à l'aide de pip."""
+    if isinstance(package_name, str):
+        import pip
+        pip.main(['install', package_name])
+    else:
+        raise TypeError("package_name should be a string.")
+
+
 import traceback
 from datetime import datetime
 from threading import Timer, Lock
 from socket import gethostname
 from os import makedirs
 import tkinter as tk
+
 
 ADDRESS = gethostname()
 PORT = 90
@@ -426,10 +438,10 @@ class Log:
         :param file_path:
         :param n_entries_before_save:
         """
-        check_var_types(
+        check_vars_types(
             (tag, 'tag', str),
             (should_print, 'should_print', bool),
-            (file_path, 'file_path', str),
+            (file_path, 'file_path', str, True),
             (n_entries_before_save, 'n_entries_before_save', int)
         )
 
@@ -495,14 +507,44 @@ class Log:
                     print("//ÉCHEC SAUVEGARDE. NOUVEL ESSAI...")
 
 
-def check_var_types(*args):
+def check_vars_types(*args, internal_check=False):
     """
     Vérifie le type des variables passées en paramètres.
 
-    Les variables doivent être présentées sous la forme de tuples avec (la variable, son nom, et le type à vérifier).
+    Les variables doivent être présentées sous la forme de tuples (var, var_name, var_type, none_ok: optionnel)
+    var : la variable
+    var_name : son nom
+    var_type : le type à vérifier
+    none_ok : spécifie si les variables nulles sont acceptées
+
+    :param args: les différentes variables à vérifier
+    :param internal_check: spécifie si la fonction est appelé de manière interne à elle-même, ne pas utiliser en dehors
     """
-    for var, var_name, var_type in args:
-        if not isinstance(var, var_type):
+    # Mise sous forme de liste de args
+    args = [arg for arg in args]
+    for index, arg in enumerate(args):
+        # Ajoute Faux par défault s'il n'y a pas les quatres paramètres
+        if len(arg) == 3:
+            arg = arg + (False,)
+            args[index] = arg
+        elif len(arg) > 4:
+            raise ValueError("check_vars_types n'accepte pas plus de 4 arguments par variable")
+        elif len(arg) < 3:
+            raise ValueError("check_vars_types n'accepte pas moins de trois arguments par variable.")
+
+    for var, var_name, var_type, none_ok in args:
+        if not internal_check:
+            check_vars_types(
+                (var_name, 'var_name', str),
+                (var_type, 'var_type', type),
+                (none_ok, 'none_ok', bool),
+                internal_check = True
+            )
+        if var is None and not none_ok or not isinstance(var, var_type) and var is not None:
+            print(var)
+            print(none_ok)
+            print(var is None and not none_ok)
+            print(not isinstance(var, var_type))
             raise TypeError("'{}' devrait être de type {} mais est de type {}.".format(var_name, var_type, type(var)))
 
 
@@ -541,6 +583,28 @@ def write_to_file(path, data):
     else:
         return False
 
+def make_unvisible(win: tk.Tk):
+    """Rend une fenêtre Tk invisible.
+    :param win: Une fenêtre Tk."""
+    win.geometry("+{}+{}".format(win.winfo_screenwidth() * 2, win.winfo_screenheight() * 2))
+
+def center(win):
+    """
+    Centre une fenêtre Tk.
+    :param win: the root or Toplevel window to center
+    """
+    win.update_idletasks()
+    width = win.winfo_width()
+    frm_width = win.winfo_rootx() - win.winfo_x()
+    win_width = width + 2 * frm_width
+    height = win.winfo_height()
+    titlebar_height = win.winfo_rooty() - win.winfo_y()
+    win_height = height + titlebar_height + frm_width
+    x = win.winfo_screenwidth() // 2 - win_width // 2
+    y = win.winfo_screenheight() // 2 - win_height // 2
+    win.geometry('{}x{}+{}+{}'.format(width, height, x, y))
+    win.deiconify()
+
 
 def configure_columns_rows(tk_obj, n_columns: int, n_rows: int, clmn_weights: list = None, row_weights: list = None):
     """"Facilite la configuration des colonnes et des lignes de grid d'un objet Tk."""
@@ -559,15 +623,6 @@ def configure_columns_rows(tk_obj, n_columns: int, n_rows: int, clmn_weights: li
     else:
         for i in range(n_rows):
             tk_obj.rowconfigure(index=i, weight=1)
-
-
-def pip_install(package_name: str):
-    """Installe un paquet à l'aide de pip."""
-    if isinstance(package_name, str):
-        import pip
-        pip.main(['install', package_name])
-    else:
-        raise TypeError("package_name should be a string.")
 
 
 def make_line(char, end='\n'):
@@ -630,8 +685,10 @@ def _switch_theme(root, main_frame):
 
 def main():
     root = MyTkApp(theme=Themes.dark)
+    make_unvisible(root)
     configure_columns_rows(root, 1, 1)
     _create_main_frame(root)
+    center(root)
     root.mainloop()
 
 

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+# coding=<utf-8>
 # -*- coding: <utf-8> -*-
 # -------------------------------------------------------------------------------
 # Name:        module1
@@ -20,31 +20,26 @@ try:
     from handyfunctions import *
     import socket as s
     from select import select
-    import tkinter as tk
+    try:
+        import tkinter as tk
+    except ImportError:
+        pip_install('tkinter')
     import os
     import traceback
 
-    success_import = False
-    while not success_import:
-        try:
-            import pyautogui
-        except ImportError:
-            pip_install('pyautogui')
-        else:
-            success_import = True
 
-    success_import = False
-    while not success_import:
-        try:
-            # noinspection PyUnresolvedReferences,PyUnresolvedReferences
-            from PIL import Image, ImageTk
-        except ImportError:
-            pip_install('pillow')
-        else:
-            success_import = True
+    # try:
+    #     import pyautogui
+    # except ImportError:
+    #         pip_install('pyautogui')
+    #         import pyautogui
 
-    success_import = False
-    while not success_import:
+    try:
+        from PIL import Image, ImageTk
+    except ImportError:
+        pip_install('pillow')
+        from PIL import Image, ImageTk
+    if sys.platform == 'windows':
         try:
             from win32con import *
             # noinspection PyUnresolvedReferences
@@ -53,13 +48,16 @@ try:
             import win32gui
         except ImportError:
             pip_install('pywin32')
-        else:
-            success_import = True
+            from win32con import *
+            # noinspection PyUnresolvedReferences
+            import win32api
+            # noinspection PyUnresolvedReferences
+            import win32gui
 
 except Exception as e:
     print(e)
     import os
-    os.system('pause')
+    os.system('exit')
 
 LEFT = 0
 TOP = 1
@@ -176,102 +174,122 @@ class Stream:
 
     def __init__(self, dest_widget, src_hdl=0x00010010):
         """Crée un stream."""
-        self._destWidget = dest_widget
-        self._src_hdl = src_hdl
+        if sys.platform == 'windows':
+            self._destWidget = dest_widget
+            self._src_hdl = src_hdl
 
-        self.src_window_dc = win32gui.GetDC(self._src_hdl)
+            self.src_window_dc = win32gui.GetDC(self._src_hdl)
 
-        # Récupère l'handle et le DC du dest_widget
-        self._dest_hdl = dest_widget.winfo_id()
-        self.dest_window_dc = win32gui.GetDC(self._dest_hdl)
+            # Récupère l'handle et le DC du dest_widget
+            self._dest_hdl = dest_widget.winfo_id()
+            self.dest_window_dc = win32gui.GetDC(self._dest_hdl)
 
-        # Crée un DC compatible pour la sauvegarde
-        self.mem_dc = win32gui.CreateCompatibleDC(self.dest_window_dc)
-        if self.mem_dc is None:
-            log.add("Échec de la création du compatibleDC.")
-            return
+            # Crée un DC compatible pour la sauvegarde
+            self.mem_dc = win32gui.CreateCompatibleDC(self.dest_window_dc)
+            if self.mem_dc is None:
+                log.add("Échec de la création du compatibleDC.")
+                return
 
-        self.dest_rect_dc = win32gui.GetClientRect(self._dest_hdl)
-        self.src_rect_dc = win32gui.GetClientRect(self._src_hdl)
+            self.dest_rect_dc = win32gui.GetClientRect(self._dest_hdl)
+            self.src_rect_dc = win32gui.GetClientRect(self._src_hdl)
 
-        win32gui.SetStretchBltMode(self.dest_window_dc, HALFTONE)
-        self._hasToRun = False
+            win32gui.SetStretchBltMode(self.dest_window_dc, HALFTONE)
+            self._hasToRun = False
 
-        self.timer = InfiniteTimer(1 / 24, self.run)
+            self.timer = InfiniteTimer(1 / 24, self.run)
+        elif sys.platform == 'linux':
+            """TODO : Lalie ?"""
+            pass
 
     def launch(self, src_hdl=None, fps=24):
         """Lance le stream."""
-        if src_hdl is None:
-            src_hdl = self._src_hdl
-        log.add("Début stream.")
-        self.refresh(src_hdl, fps)
-        self._hasToRun = True
-        # self.run()
-        self.timer.start()
+        if sys.platform == 'windows':
+            if src_hdl is None:
+                src_hdl = self._src_hdl
+            log.add("Début stream.")
+            self.refresh(src_hdl, fps)
+            self._hasToRun = True
+            # self.run()
+            self.timer.start()
+        elif sys.platform == 'linux':
+            """TODO : LALIE ?"""
+            pass
 
     def stop(self):
         """Arrête le stream."""
-        self._hasToRun = False
-        self.timer.cancel()
+        if sys.platform == 'windows':
+            self._hasToRun = False
+            self.timer.cancel()
+        elif sys.platform == 'linux':
+            """TODO : Lalie..."""
+            pass
 
     def refresh(self, src_hdl, fps):
         """Met à jour les paramètres du stream."""
-        if isinstance(src_hdl, str):
-            if not src_hdl == "" and not src_hdl == entry_hint:
-                self._src_hdl = int(src_hdl, 16)
+        if sys.platform == 'windows':
+            if isinstance(src_hdl, str):
+                if not src_hdl == "" and not src_hdl == entry_hint:
+                    self._src_hdl = int(src_hdl, 16)
+                else:
+                    self._src_hdl = 0x00010010
+            elif isinstance(src_hdl, int):
+                pass
             else:
-                self._src_hdl = 0x00010010
-        elif isinstance(src_hdl, int):
+                log.add(
+                    "Entrée incorrecte, l'entrée utilisateur devrait être un int, mais est de type : " +
+                    str(type(src_hdl)))
+            self.src_window_dc = win32gui.GetDC(self._src_hdl)
+            self.dest_window_dc = win32gui.GetDC(self._dest_hdl)
+
+            # Crée un DC compatible pour la sauvegarde
+            self.mem_dc = win32gui.CreateCompatibleDC(self.dest_window_dc)
+            if self.mem_dc is None:
+                log.add("Échec de la création du compatibleDC.")
+                return
+
+            self.dest_rect_dc = win32gui.GetClientRect(self._dest_hdl)
+            self.src_rect_dc = win32gui.GetClientRect(self._src_hdl)
+
+            win32gui.SetStretchBltMode(self.dest_window_dc, HALFTONE)
+
+            self.timer.cancel()
+            self.timer = InfiniteTimer(1 / float(fps), self.run)
+            if self._hasToRun:
+                self.timer.start()
+            log.add("Paramètres stream rafraîchis.")
+        elif sys.platform == 'linux':
+            """TODO : . . . ..."""
             pass
-        else:
-            log.add(
-                "Entrée incorrecte, l'entrée utilisateur devrait être un int, mais est de type : " +
-                str(type(src_hdl)))
-        self.src_window_dc = win32gui.GetDC(self._src_hdl)
-        self.dest_window_dc = win32gui.GetDC(self._dest_hdl)
-
-        # Crée un DC compatible pour la sauvegarde
-        self.mem_dc = win32gui.CreateCompatibleDC(self.dest_window_dc)
-        if self.mem_dc is None:
-            log.add("Échec de la création du compatibleDC.")
-            return
-
-        self.dest_rect_dc = win32gui.GetClientRect(self._dest_hdl)
-        self.src_rect_dc = win32gui.GetClientRect(self._src_hdl)
-
-        win32gui.SetStretchBltMode(self.dest_window_dc, HALFTONE)
-
-        self.timer.cancel()
-        self.timer = InfiniteTimer(1 / float(fps), self.run)
-        if self._hasToRun:
-            self.timer.start()
-        log.add("Paramètres stream rafraîchis.")
 
     def run(self):
         """Fonction qui est appelé en boucle."""
-        # Copie le DC de la source vers le DC de destination en le redimensionnant
-        win32gui.StretchBlt(
-            self.dest_window_dc,
-            0, 0, self.dest_rect_dc[RIGHT], self.dest_rect_dc[BOTTOM],
-            self.src_window_dc,
-            0, 0, self.src_rect_dc[RIGHT], self.src_rect_dc[BOTTOM],
-            SRCCOPY)
+        if sys.platform == 'windows':
+            # Copie le DC de la source vers le DC de destination en le redimensionnant
+            win32gui.StretchBlt(
+                self.dest_window_dc,
+                0, 0, self.dest_rect_dc[RIGHT], self.dest_rect_dc[BOTTOM],
+                self.src_window_dc,
+                0, 0, self.src_rect_dc[RIGHT], self.src_rect_dc[BOTTOM],
+                SRCCOPY)
 
-        source_bitmap = win32gui.CreateCompatibleBitmap(
-            self.dest_window_dc,
-            self.dest_rect_dc[RIGHT] - self.dest_rect_dc[LEFT],
-            self.dest_rect_dc[BOTTOM] - self.dest_rect_dc[TOP])
+            source_bitmap = win32gui.CreateCompatibleBitmap(
+                self.dest_window_dc,
+                self.dest_rect_dc[RIGHT] - self.dest_rect_dc[LEFT],
+                self.dest_rect_dc[BOTTOM] - self.dest_rect_dc[TOP])
 
-        if source_bitmap is None:
-            log.add("Échec création bitmap.")
-            return
+            if source_bitmap is None:
+                log.add("Échec création bitmap.")
+                return
 
-        win32gui.SelectObject(self.mem_dc, source_bitmap)
-        if self._hasToRun:
-            # self._tkThread.after(250, self.run)
+            win32gui.SelectObject(self.mem_dc, source_bitmap)
+            if self._hasToRun:
+                # self._tkThread.after(250, self.run)
+                pass
+            else:
+                log.add("Fin stream.")
+        elif sys.platform == 'linux':
+            """TODO : LIELA"""
             pass
-        else:
-            log.add("Fin stream.")
 
 
 class IHM(MyFrame):
@@ -342,45 +360,48 @@ class IHM(MyFrame):
 
         def send_test(msg: str="Message de Test"):
             self._app.broadcast(msg)
+        if sys.platform == 'windows':
+            def find_window(source_handle=0x00010100, dest_widget=self.tv):
+                """Trouve la fenêtre spécifiée à l'aide de source_handle puis la copie sur le DC de dest_widget."""
+                if isinstance(source_handle, str):
+                    if source_handle != "" and source_handle != entry_hint:
+                        source_handle = int(str(source_handle), 16)
+                    else:
+                        source_handle = None
+                source_window_dc = win32gui.GetDC(source_handle)
+                target_handle = dest_widget.winfo_id()
+                target_window_dc = win32gui.GetDC(target_handle)
 
-        def find_window(source_handle=0x00010100, dest_widget=self.tv):
-            """Trouve la fenêtre spécifiée à l'aide de source_handle puis la copie sur le DC de dest_widget."""
-            if isinstance(source_handle, str):
-                if source_handle != "" and source_handle != entry_hint:
-                    source_handle = int(str(source_handle), 16)
-                else:
-                    source_handle = None
-            source_window_dc = win32gui.GetDC(source_handle)
-            target_handle = dest_widget.winfo_id()
-            target_window_dc = win32gui.GetDC(target_handle)
+                mem_dc = win32gui.CreateCompatibleDC(target_window_dc)
+                if mem_dc is None:
+                    log.add("Échec de la création du compatibleDC.")
+                    return
 
-            mem_dc = win32gui.CreateCompatibleDC(target_window_dc)
-            if mem_dc is None:
-                log.add("Échec de la création du compatibleDC.")
-                return
+                dest_rect_dc = win32gui.GetClientRect(target_handle)
+                print(dest_rect_dc)
+                win32gui.SetStretchBltMode(target_window_dc, HALFTONE)
 
-            dest_rect_dc = win32gui.GetClientRect(target_handle)
-            print(dest_rect_dc)
-            win32gui.SetStretchBltMode(target_window_dc, HALFTONE)
+                # Copie le DC de la source vers le DC de destination en le redimensionnant
+                win32gui.StretchBlt(
+                    target_window_dc,
+                    0, 0, dest_rect_dc[RIGHT], dest_rect_dc[BOTTOM],
+                    source_window_dc,
+                    0, 0, win32api.GetSystemMetrics(SM_CXSCREEN), win32api.GetSystemMetrics(SM_CYSCREEN),
+                    SRCCOPY)
 
-            # Copie le DC de la source vers le DC de destination en le redimensionnant
-            win32gui.StretchBlt(
-                target_window_dc,
-                0, 0, dest_rect_dc[RIGHT], dest_rect_dc[BOTTOM],
-                source_window_dc,
-                0, 0, win32api.GetSystemMetrics(SM_CXSCREEN), win32api.GetSystemMetrics(SM_CYSCREEN),
-                SRCCOPY)
+                source_bitmap = win32gui.CreateCompatibleBitmap(
+                    target_window_dc,
+                    dest_rect_dc[RIGHT] - dest_rect_dc[LEFT],
+                    dest_rect_dc[BOTTOM] - dest_rect_dc[TOP])
 
-            source_bitmap = win32gui.CreateCompatibleBitmap(
-                target_window_dc,
-                dest_rect_dc[RIGHT] - dest_rect_dc[LEFT],
-                dest_rect_dc[BOTTOM] - dest_rect_dc[TOP])
+                if source_bitmap is None:
+                    log.add("Échec création bitmap.")
+                    return
 
-            if source_bitmap is None:
-                log.add("Échec création bitmap.")
-                return
-
-            win32gui.SelectObject(mem_dc, source_bitmap)
+                win32gui.SelectObject(mem_dc, source_bitmap)
+        else:
+            def find_window(*args, **kwargs):
+                pass
 
         self.tv.grid(column=0, row=0, columnspan=3, sticky="nesw")
         self.tv.create_image(0, 0, image=self.default_photo, anchor='nw')
@@ -484,6 +505,7 @@ class ServerThread(Thread):
         self._serverSocket = s.socket(s.AF_INET, s.SOCK_STREAM)
 
     def run(self):
+        self._app.
         try:
             self._serverSocket.bind((self._address, self._port))
             self._serverSocket.listen(5)
@@ -503,7 +525,8 @@ class ServerThread(Thread):
             log.add(formatted_error("Error : " + error.strerror))
             messagebox.showerror("Mise en place serveur",
                                  "Une erreur est survenue, êtes vous sûr qu'un autre serveur ne tourne pas déjà?")
-            self._app.terminate()
+            if sys.platform == 'windows':
+                self._app.terminate()
 
     def resume(self):
         self._isListening = True
