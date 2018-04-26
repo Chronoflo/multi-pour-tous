@@ -20,7 +20,7 @@ import tkinter as tk
 
 
 ADDRESS = gethostname()
-PORT = 90
+PORT = 3400
 KEY = 0
 GAMEPAD = 1
 MOUSE = 2
