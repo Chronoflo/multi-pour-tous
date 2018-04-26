@@ -15,6 +15,7 @@ MOUSE = 2
 
 line_width = len("//SuperServeur::2018/04/06::00:03:48 : Application terminée.") * 3
 
+user_names = ['Robert', 'Sartres', 'Oui-Oui', 'Jean-Phillipe', 'Gros Jean']
 # log = None
 # eventLog = None
 
@@ -51,19 +52,6 @@ class Themes:
         'TextCursor': 'lightblue',
         'backgroundColor': 'darkblue'
     }
-
-
-class UserNames:
-    i_next_name_to_give = 0
-    names = ['Robert', 'Sartres', 'Oui-Oui', 'Jean-Phillipe', 'Gros Jean']
-    for index, user in names:
-        names[index] = user, 'free'
-    print(names)
-
-
-
-
-
 
 
 class ListIterator(object):
