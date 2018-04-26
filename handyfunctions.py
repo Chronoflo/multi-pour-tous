@@ -487,7 +487,7 @@ class Log:
                 try:
                     write_to_file(self._filePath,
                                   "".join([entry + "\n" for entry in self.entriesOnMem])
-                                  + make_line('~', end='\n'))
+                                  + make_line('~', end='\n\n'))
                     is_final_save_successful = True
                     print("//SAUVEGARDE FINALE '{}'".format(self.name))
                 except PermissionError:
