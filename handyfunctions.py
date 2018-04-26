@@ -425,27 +425,31 @@ class Log:
         :param file_path:
         :param n_entries_before_save:
         """
-        if isinstance(tag, str):
-            if tag in Log._used_ids:
-                raise ValueError('Ce tag est déjà utilisé.')
-            else:
-                Log._used_ids.add(tag)
-            self.name = "Log_" + tag
-            self._TAG: str = tag
-            self._shouldPrint: bool = should_print
+        check_var_types(
+            (tag, 'tag', str),
+            (should_print, 'should_print', bool),
+            (file_path, 'file_path', str),
+            (n_entries_before_save, 'n_entries_before_save', int)
+        )
 
-            self._filePath: str = file_path
-            if self._filePath is not None:
-                write_to_file(self._filePath, make_line('~'))
-
-            self._hasToRun: bool = True
-            self.entriesOnMem: list = []
-            self.nEntriesBeforeSave: int = n_entries_before_save
-            self._lock = Lock()
-            Log._created_logs.append(self)
-            print("//DÉBUT_LOG '{}'".format(self.name))
+        if tag in Log._used_ids:
+            raise ValueError('Ce tag est déjà utilisé.')
         else:
-            raise TypeError("'tag' devrait être de type str. Type actuel : " + str(type(tag)))
+            Log._used_ids.add(tag)
+        self.name = "Log_" + tag
+        self._TAG: str = tag
+        self._shouldPrint: bool = should_print
+
+        self._filePath: str = file_path
+        if self._filePath is not None:
+            write_to_file(self._filePath, make_line('~'))
+
+        self._hasToRun: bool = True
+        self.entriesOnMem: list = []
+        self.nEntriesBeforeSave: int = n_entries_before_save
+        self._lock = Lock()
+        Log._created_logs.append(self)
+        print("//DÉBUT_LOG '{}'".format(self.name))
 
     def add(self, msg):
         """Ajoute une entrée au log."""
@@ -490,6 +494,17 @@ class Log:
                     print("//ÉCHEC SAUVEGARDE. NOUVEL ESSAI...")
 
 
+def check_var_types(*args):
+    """
+    Vérifie le type des variables passées en paramètres.
+
+    Les variables doivent être présentées sous la forme de tuples avec (la variable, son nom, et le type à vérifier).
+    """
+    for var, var_name, var_type in args:
+        if not isinstance(var, var_type):
+            raise TypeError("'{}' devrait être de type {} mais est de type {}.".format(var_name, var_type, type(var)))
+
+
 def is_slash(char: str):
     """Retourne Vrai si char est un slash."""
     char = str(char)
@@ -513,11 +528,6 @@ def check_path(path):
         makedirs(path_to_check, exist_ok=True)
     else:
         print("Il n'y avait pas de dossiers à vérifier.")
-
-
-def is_success(boolean):
-    """Rend le code plus lisible."""
-    return bool(boolean)
 
 
 def write_to_file(path, data):
@@ -624,4 +634,4 @@ def main():
 if __name__ == '__main__':
     ExampleLog = Log('ExampleLog')
     main()
-    Log.terminate_all()
+    Log.final_save_all()
