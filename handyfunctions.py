@@ -15,7 +15,7 @@ MOUSE = 2
 
 line_width = len("//SuperServeur::2018/04/06::00:03:48 : Application terminée.") * 3
 
-user_names = ['Robert', 'Sartres', 'Oui-Oui', 'Jean-Phillipe', 'Gros Jean']
+user_names = ['Robert', 'Sartres', 'Oui-Oui', 'Jean-Phillipe', 'Gros Jean', 'Martine']
 # log = None
 # eventLog = None
 
