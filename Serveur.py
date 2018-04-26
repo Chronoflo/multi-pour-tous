@@ -573,6 +573,7 @@ def main():
     global eventLog
     eventLog = Log("SuperServeurEvents", False, "logs/log_server_events.log", 200, enable=True)
     eventLog.add("Lancement application...")
+    # Lance l'application.
     safe_launch(run_app, log, eventLog)
 
 
