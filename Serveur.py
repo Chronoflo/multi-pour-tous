@@ -505,7 +505,7 @@ class ServerThread(Thread):
         self._serverSocket = s.socket(s.AF_INET, s.SOCK_STREAM)
 
     def run(self):
-        self._app.
+        self._app.update_idletasks()
         try:
             self._serverSocket.bind((self._address, self._port))
             self._serverSocket.listen(5)
@@ -527,6 +527,9 @@ class ServerThread(Thread):
                                  "Une erreur est survenue, êtes vous sûr qu'un autre serveur ne tourne pas déjà?")
             if sys.platform == 'windows':
                 self._app.terminate()
+            elif sys.platform == 'linux':
+                """TODO : Madame Surleweb, o`u êtes vous ?"""
+                pass
 
     def resume(self):
         self._isListening = True
@@ -587,9 +590,10 @@ class RecvData(Thread):
 
 def run_app():
     my_app = MyApplication()
+    make_invisible(my_app)
     my_app.initialize_ihm()
     my_app.initiate_server(ADDRESS, PORT)
-
+    center(my_app)
     my_app.mainloop()
 
 

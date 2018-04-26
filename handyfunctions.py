@@ -583,7 +583,7 @@ def write_to_file(path, data):
     else:
         return False
 
-def make_unvisible(win: tk.Tk):
+def make_invisible(win: tk.Tk):
     """Rend une fenêtre Tk invisible.
     :param win: Une fenêtre Tk."""
     win.geometry("+{}+{}".format(win.winfo_screenwidth() * 2, win.winfo_screenheight() * 2))
@@ -685,7 +685,7 @@ def _switch_theme(root, main_frame):
 
 def main():
     root = MyTkApp(theme=Themes.dark)
-    make_unvisible(root)
+    make_invisible(root)
     configure_columns_rows(root, 1, 1)
     _create_main_frame(root)
     center(root)

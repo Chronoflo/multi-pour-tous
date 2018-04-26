@@ -11,17 +11,19 @@
 # Copyright:   (c) DELPRAF 2018
 # Licence:     <your licence>
 # -------------------------------------------------------------------------------
+# TODO : toute la partie réseau est à refaire
+import sys
 try:
     import socket as sokt
     import traceback
 
     from handyfunctions import *
     from PIL import Image, ImageTk
-    import win32gui
+    if sys.platform == 'windows':
+        import win32gui
+        import win32api
+        from win32con import *
 
-    import win32api
-
-    from win32con import *
     from threading import Thread
     from select import select
 except Exception as e:
@@ -225,44 +227,49 @@ class IHM(MyFrame):
         def send_test(msg: str="Message de Test"):
             self._app.broadcast(msg)
 
-        def find_window(source_handle=0x00010100, dest_widget=self.tv):
-            """Trouve la fenêtre spécifiée à l'aide de source_handle puis la copie sur le DC de dest_widget."""
-            if isinstance(source_handle, str):
-                if source_handle != "" and source_handle != entry_hint:
-                    source_handle = int(str(source_handle), 16)
-                else:
-                    source_handle = None
-            source_window_dc = win32gui.GetDC(source_handle)
-            target_handle = dest_widget.winfo_id()
-            target_window_dc = win32gui.GetDC(target_handle)
+        if sys.platform == 'windows':
+            def find_window(source_handle=0x00010100, dest_widget=self.tv):
+                """Trouve la fenêtre spécifiée à l'aide de source_handle puis la copie sur le DC de dest_widget."""
+                if isinstance(source_handle, str):
+                    if source_handle != "" and source_handle != entry_hint:
+                        source_handle = int(str(source_handle), 16)
+                    else:
+                        source_handle = None
+                source_window_dc = win32gui.GetDC(source_handle)
+                target_handle = dest_widget.winfo_id()
+                target_window_dc = win32gui.GetDC(target_handle)
 
-            mem_dc = win32gui.CreateCompatibleDC(target_window_dc)
-            if mem_dc is None:
-                log.add("Échec de la création du compatibleDC.")
-                return
+                mem_dc = win32gui.CreateCompatibleDC(target_window_dc)
+                if mem_dc is None:
+                    log.add("Échec de la création du compatibleDC.")
+                    return
 
-            dest_rect_dc = win32gui.GetClientRect(target_handle)
-            print(dest_rect_dc)
-            win32gui.SetStretchBltMode(target_window_dc, HALFTONE)
+                dest_rect_dc = win32gui.GetClientRect(target_handle)
+                print(dest_rect_dc)
+                win32gui.SetStretchBltMode(target_window_dc, HALFTONE)
 
-            # Copie le DC de la source vers le DC de destination en le redimensionnant
-            win32gui.StretchBlt(
-                target_window_dc,
-                0, 0, dest_rect_dc[RIGHT], dest_rect_dc[BOTTOM],
-                source_window_dc,
-                0, 0, win32api.GetSystemMetrics(SM_CXSCREEN), win32api.GetSystemMetrics(SM_CYSCREEN),
-                SRCCOPY)
+                # Copie le DC de la source vers le DC de destination en le redimensionnant
+                win32gui.StretchBlt(
+                    target_window_dc,
+                    0, 0, dest_rect_dc[RIGHT], dest_rect_dc[BOTTOM],
+                    source_window_dc,
+                    0, 0, win32api.GetSystemMetrics(SM_CXSCREEN), win32api.GetSystemMetrics(SM_CYSCREEN),
+                    SRCCOPY)
 
-            source_bitmap = win32gui.CreateCompatibleBitmap(
-                target_window_dc,
-                dest_rect_dc[RIGHT] - dest_rect_dc[LEFT],
-                dest_rect_dc[BOTTOM] - dest_rect_dc[TOP])
+                source_bitmap = win32gui.CreateCompatibleBitmap(
+                    target_window_dc,
+                    dest_rect_dc[RIGHT] - dest_rect_dc[LEFT],
+                    dest_rect_dc[BOTTOM] - dest_rect_dc[TOP])
 
-            if source_bitmap is None:
-                log.add("Échec création bitmap.")
-                return
+                if source_bitmap is None:
+                    log.add("Échec création bitmap.")
+                    return
 
-            win32gui.SelectObject(mem_dc, source_bitmap)
+                win32gui.SelectObject(mem_dc, source_bitmap)
+        else:
+            """TODO"""
+            def find_windows(*args, **kwargs):
+                pass
 
         self.tv.grid(column=0, row=0, columnspan=3, sticky="nesw")
         self.tv.create_image(0, 0, image=self.default_photo, anchor='nw')
@@ -296,7 +303,7 @@ class IHM(MyFrame):
 
 class ConnectionThread(Thread):
     def __init__(self, target_address, target_port, main_thread):
-        Thread.__init__(self)
+        Thread.__init__(self, daemon=True)
 
         self._mainThread = main_thread
         self._socket = main_thread.socket
@@ -329,7 +336,7 @@ surchargé ou non connecté.")
 
 class RecvDataThread(Thread):
     def __init__(self, main_thread):
-        Thread.__init__(self)
+        super().__init__(daemon=True)
 
         self._mainThread = main_thread
         self._socket = main_thread.socket
@@ -355,7 +362,7 @@ class RecvDataThread(Thread):
 
 class SendDataThread(Thread):
     def __init__(self, main_thread):
-        Thread.__init__(self)
+        Thread.__init__(self, daemon=True)
 
         self._mainThread = main_thread
         self._socket = main_thread.socket
