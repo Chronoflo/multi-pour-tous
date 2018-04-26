@@ -392,21 +392,8 @@ def main():
     global eventLog
     eventLog = Log("SuperClientEvents", False, "logs/log_client_events.log", 220, enable=False)
     eventLog.add("Lancement application...")
-    # noinspection PyBroadException
-    try:
-        run_app()
-    except Exception as e:
-        print(e)
-        log.add('\n' +
-                "".join(['_' for i in range(len("//SuperServeur::2018/04/06::00:03:48 : Application terminée."))]) +
-                traceback.format_exc() +
-                "".join(['_' for i in range(len("//SuperServeur::2018/04/06::00:03:48 : Application terminée."))]))
-        Log.save_all()
-    finally:
-        eventLog.add("Fin application.")
-        InfiniteTimer.kill_threads()
-        Log.terminate_all()
-        Log.final_save_all()
+    # Lance l'application.
+    safe_launch(run_app, log, eventLog)
 
 
 if __name__ == '__main__':

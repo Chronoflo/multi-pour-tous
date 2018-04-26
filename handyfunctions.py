@@ -568,17 +568,8 @@ def configure_columns_rows(tk_obj, n_columns: int, n_rows: int, clmn_weights: li
             tk_obj.rowconfigure(index=i, weight=1)
 
 
-def safe_launch(func, log):
-    # noinspection PyBroadException
-    try:
-        func
-    except Exception as e:
-        print(e)
-        log.add('!!!!' + traceback.format_exc() + '!!!!')
-        Log.save_all()
-
-
 def pip_install(package_name: str):
+    """Installe un paquet à l'aide de pip."""
     if isinstance(package_name, str):
         import pip
         pip.main(['install', package_name])
@@ -596,13 +587,29 @@ def make_line(char, end='\n'):
 
 
 def formatted_error(error):
-    return  ('\n'
+    """Retourne une erreur encadrée par des lignes de points."""
+    return ('\n'
             + make_line('.')
-            + traceback.format_exc()
+            + error
             + make_line('.', end=""))
 
 
+def safe_launch(func, log, event_log):
+    # noinspection PyBroadException
+    try:
+        func()
+    except Exception:
+        log.add(formatted_error(traceback.format_exc()))
+        Log.save_all()
+    finally:
+        event_log.add("Fin application.")
+        InfiniteTimer.kill_threads()
+        Log.terminate_all()
+        Log.final_save_all()
+
+
 def _create_main_frame(master):
+    """Fonction de démonstration, à ne pas utiliser à de vraies fins."""
     frame = MyFrame(master=master, bg='blue')
     frame.grid(ipadx='4p', ipady='4p', sticky='nesw')
     configure_columns_rows(frame, 1, 4)
@@ -615,6 +622,7 @@ def _create_main_frame(master):
 
 
 def _switch_theme(root, main_frame):
+    """Fonction de démonstration, à ne pas utiliser pour de vraies fins."""
     ExampleLog.add("Changement de thème...")
     if root.theme is Themes.dark:
         root.theme = Themes.allBlue
