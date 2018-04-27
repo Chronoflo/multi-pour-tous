@@ -17,6 +17,7 @@ try:
     from threading import Thread
     from datetime import datetime
     from handyfunctions import *
+    import quickTk
     import socket as s
     from select import select
     import os
@@ -37,6 +38,7 @@ except ImportError as e:
     from threading import Thread
     from datetime import datetime
     from handyfunctions import *
+    import quickTk
     import socket as s
     from select import select
     import tkinter as tk
@@ -579,10 +581,10 @@ class RecvData(Thread):
 
 def run_app():
     my_app = MyApplication()
-    make_invisible(my_app)
+    quickTk.make_invisible(my_app)
     my_app.initialize_ihm()
     my_app.initiate_server(ADDRESS, PORT)
-    center(my_app)
+    quickTk.center(my_app)
     my_app.mainloop()
 
 

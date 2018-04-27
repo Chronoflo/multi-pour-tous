@@ -24,7 +24,7 @@ def make_invisible(win: tk.Tk):
     """Rend une fenêtre Tk invisible.
     :param win: Une fenêtre Tk.
     TODO: Il faudrait peut-être améliorer l'expression pour qu'elle marche dans tous les cas"""
-    win.geometry("0x0+{}+{}".format(win.winfo_screenwidth() * 2, win.winfo_screenheight() * 2))
+    win.geometry("+{}+{}".format(win.winfo_screenwidth() * 2, win.winfo_screenheight() * 2))
 
 
 def center(win):
