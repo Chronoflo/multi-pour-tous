@@ -1,7 +1,7 @@
 # -*- coding: <utf-8> -*-
 """Ce fichier sert à lancer Client en mode fenêtré uniquement, et permet d'en générer du python compilé."""
 
-import Client
+from modules import Client
 
 if __name__ == '__main__':
     Client.main()
