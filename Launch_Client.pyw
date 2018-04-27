@@ -1,15 +1,6 @@
-#!/usr/bin/python
 # -*- coding: <utf-8> -*-
-# -------------------------------------------------------------------------------
-# Name:        Launch_Client
-# Purpose:     lancer le client
-#
-# Author:      Florian
-#
-# Created:     30/03/2018
-# Copyright:   (c) Florian 2018
-# Licence:     <your licence>
-# -------------------------------------------------------------------------------
+"""Ce fichier sert à lancer Client en mode fenêtré uniquement, et permet d'en générer du python compilé."""
+
 import Client
 
 if __name__ == '__main__':

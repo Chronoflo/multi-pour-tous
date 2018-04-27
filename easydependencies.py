@@ -1,5 +1,6 @@
 # -*- coding: <utf-8> -*-
 """Ce module contient des fonctions permettant de facilement gérer les dépendances."""
+
 from sys import platform
 import pip
 from quickTk import warning, info
