@@ -1,2 +1,4 @@
 PyOpenGL
 pillow
+Xlib
+pyautogui

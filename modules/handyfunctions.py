@@ -1,11 +1,13 @@
 #!/usr/bin/python
 # -*- coding: <utf-8> -*-
+
+from modules import easyimport
+tk = easyimport.tkinter()
 import traceback
 from datetime import datetime
 from threading import Timer, Lock
 from socket import gethostname
 from os import makedirs
-import tkinter as tk
 
 ADDRESS = gethostname()
 PORT = 3400
@@ -493,7 +495,7 @@ class Log:
                     print("//ÉCHEC SAUVEGARDE. NOUVEL ESSAI...")
 
 
-def check_vars_types(*args, internal_check=False):
+def check_vars_types(*var_tuples, internal_check=False):
     """
     Vérifie le type des variables passées en paramètres.
 
@@ -503,28 +505,39 @@ def check_vars_types(*args, internal_check=False):
     var_type : le type à vérifier
     none_ok : spécifie si les variables nulles sont acceptées
 
-    :param args: les différentes variables à vérifier
+    :param var_tuples: les différentes variables à vérifier
     :param internal_check: spécifie si la fonction est appelé de manière interne à elle-même, ne pas utiliser en dehors
     """
-    # Mise sous forme de liste de args
-    args = [arg for arg in args]
-    for index, arg in enumerate(args):
+    leng = len(var_tuples)
+    # Test si les variables ont été passés sous forme de tuples
+    if isinstance(var_tuples[0], tuple):
+        # les tuples sont rangés dans une liste
+        var_tuples = list(var_tuples)
+    # Test si une seule variables a été passée sous la forme de plusieurs arguments
+    elif leng == 3 or leng == 4:
+        # Ces arguments sont rassemblés en un tuple et mis dans la liste var_tuples
+        var_tuples = [tuple(var_tuples)]
+    else:
+        raise ValueError("")  # TODO : faire un message plus cool
+
+    for index, var_tuple in enumerate(var_tuples):
         # Ajoute Faux par défault s'il n'y a pas les quatres paramètres
-        if len(arg) == 3:
-            arg = arg + (False,)
-            args[index] = arg
-        elif len(arg) > 4:
+        if len(var_tuple) == 3:
+            var_tuple = var_tuple + (False,)
+            var_tuples[index] = var_tuple
+        elif len(var_tuple) > 4:
+            print(var_tuple)
             raise ValueError("check_vars_types n'accepte pas plus de 4 arguments par variable")
-        elif len(arg) < 3:
+        elif len(var_tuple) < 3:
             raise ValueError("check_vars_types n'accepte pas moins de trois arguments par variable.")
 
-    for var, var_name, var_type, none_ok in args:
+    for var, var_name, var_type, none_ok in var_tuples:
         if not internal_check:
             check_vars_types(
                 (var_name, 'var_name', str),
                 (var_type, 'var_type', type),
                 (none_ok, 'none_ok', bool),
-                internal_check = True
+                internal_check=True
             )
         if var is None and not none_ok or not isinstance(var, var_type) and var is not None:
             print(var)
@@ -584,7 +597,7 @@ def write_to_file(path, data):
         return False
 
 
-def cmd(command: str):
+def command(command: str):
     """Retourne une commande écrite comme une phrase sous la forme d'une liste. (ex : sert pour subprocess)"""
     return [i for i in command.split(" ") if i != " "]
 
@@ -626,6 +639,14 @@ def formatted_error(error=traceback.format_exc()):
             + make_line('.')
             + error
             + make_line('.', end=""))
+
+
+def check_python_version():
+    """Vérifie que la version de python utilisée est bien la 3."""
+    from sys import version_info
+
+    if version_info[0] < 3:
+        raise Exception("Python 3 ou une version plus récente est requise.")
 
 
 def safe_launch(func, log, event_log):

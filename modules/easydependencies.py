@@ -1,29 +1,87 @@
+#!/usr/bin/python3
 # -*- coding: <utf-8> -*-
-"""Ce module contient des fonctions permettant de facilement gérer les dépendances. L'exécuter lance les processus de
-vérification et d'installation."""
+"""
+Ce module contient des fonctions permettant de facilement gérer les dépendances. L'exécuter lance les processus de
+vérification et d'installation.
+
+ • ensure_pip : s'assure que pip est installé
+ • pip_install : installe un/des paquets à l'aide de pip
+ • pip_uninstall : désintalle un/des paquets à l'aide de pip
+ • pip_check : vérifie que les paquets installés ont des dépendances compatibles
+ • pip_command : exécute une commande pip
+ • install_requirements : vérifie les dépendances et installent celles qui manquent
+ • uninstall_requirements : désintalle toutes les dépendances
+ • get_unsatisfied_reqs : renvoie les dépendances manquantes
+ • reqs_to_list : convertit une string, qui suit la convention de pip, en une liste de dépendances
+"""
 
 import sys
 import subprocess
-from modules.handyfunctions import cmd, check_vars_types
+from inspect import currentframe
+from modules.handyfunctions import command, check_vars_types, check_python_version, get_folder_path
 from modules.quickTk import warning, info, error
+
 
 check_title = "Dépendances-Vérification "
 check_success_msg = "Parfait !\nToutes les dépendances sont satisfaites.\nVous pouvez maintenant profitez de ce \
 magnifique programme."
 check_error_msg = "lol"
 install_title = "Dépendances-Installation"
-install_start_msg = "Les dépendances manquantes vont maintenant être installés. Attention, cela peut prendre un long \
+install_start_msg = "Les dépendances manquantes vont maintenant être installées.\n\nAttention, cela peut prendre un long \
  moment (jusqu'à dix minutes). Une autre boîte de dialogue vous avertira de la fin."
-install_error_msg = "Diantre :(\nUne erreur est survenue lors de l'installation. L'application va maintenant quitter."
+install_error_msg = "Diantre :(\nUne erreur est survenue lors de l'installation.\nÊtes-vous sûr que tous les paquets \
+listées dans les requirements existent ?\nL'application va maintenant quitter."
 install_end_msg = "Processus d'installation terminée. Normalement, tout devrait être bon !"
 
 
-def pip_install(package_name: str):
-    """Installe un paquet à l'aide de pip."""
-    check_vars_types(package_name, 'package_name', str)
-    subprocess.check_call(cmd("{python} -m pip install {package}".format(
+def ensurepip():
+    """S'assure que pip est installé"""
+    from importlib.util import find_spec
+    pip_found = find_spec("pip") is not None
+
+    if not pip_found:
+        if sys.platform == 'linux':
+            from os import system
+            system("sudo apt-get install python3-pip")
+        else:
+            print("Je sais pas quoi faire :'( ")
+
+
+def pip_install(packages):
+    """Installe un/des paquets à l'aide de pip."""
+    if isinstance(packages, str):
+        packages = packages
+    elif isinstance(packages, list):
+        for package in packages:
+            check_vars_types((package, 'package', str))
+        packages = " ".join(packages)
+
+    pip_command("install " + packages + " --retries 1")
+
+
+def pip_uninstall(packages):
+    """Enlève un/des paquets à l'aide de pip"""
+    if isinstance(packages, str):
+        packages = packages
+    elif isinstance(packages, list):
+        for package in packages:
+            check_vars_types((package, 'package', str))
+        packages = " ".join(packages)
+
+    pip_command("uninstall " + packages)
+
+
+def pip_check():
+    """Vérifie que les paquets installés ont des dépendances compatibles."""
+    pip_command("check")
+
+
+def pip_command(cmd: str):
+    """Execute une commande pip."""
+    check_vars_types(cmd, 'cmd', str)
+    subprocess.check_call(command("{python} -m pip {cmd}".format(
         python=sys.executable,
-        package=package_name
+        cmd=cmd
     )))
 
 
@@ -31,46 +89,55 @@ def install_requirements():
     """
     Installe toutes les dépendances requises en fonction de l'OS de l'utilisateur.
     """
-    reqs_not_satisfied = get_not_satisfied_reqs()
-    print(reqs_not_satisfied)
+    reqs_not_satisfied = get_unsatisfied_reqs()
     if reqs_not_satisfied:
         check_msg = "Certaines dépendances ne sont pas satisfaites :\n" + "\n".join(
             [' • ' + i for i in reqs_not_satisfied])
         warning(check_title, check_msg)
         print(check_msg)
-        warning(install_title, install_start_msg)
+        info(install_title, install_start_msg)
         print("Installation des paquets manquants, veuillez patienter...")
 
         try:
-            subprocess.check_call(cmd("{python} -m pip install -r {packages}".format(
-                python=sys.executable,
-                packages=" ".join(reqs_not_satisfied)
-            )))
+            for req in reqs_not_satisfied:
+                pip_install(req)
         except subprocess.CalledProcessError:
             print("Une erreur est survenue lors de l'installation. :(")
             error(install_title, install_error_msg)
-            sys.exit(2)
+            sys.exit()
         else:
             print("Terminé.")
             info(install_title, install_end_msg)
-        finally:
             print("Vérification...")
-            if get_not_satisfied_reqs():
-                error(check_title, check_error_msg)
-            else:
+            if not get_unsatisfied_reqs():
+                print("O.K.")
                 info(check_title, check_success_msg)
+            else:
+                print("Oh no..")
+                error(check_title, check_error_msg)
+        finally:
+            pip_check()
     else:
         info(check_title, check_success_msg)
 
 
-def get_not_satisfied_reqs():
+def uninstall_requirements():
+    """Désinstalle toutes les dépendances"""
+    with open('../setup/{reqs}.txt'.format(reqs=sys.platform + '_requirements'), 'r') as f:
+        reqs = reqs_to_list(f.read())
+    pip_uninstall(reqs)
+
+
+def get_unsatisfied_reqs():
     """Retourne une liste des dépendances non satisfaites."""
     # Récupère les paquets nécessaires en fonction du système
-    with open('../setup/{reqs}.txt'.format(reqs=sys.platform + '_requirements'), 'r') as f:
+    with open('{path}/../setup/{reqs}.txt'.format(
+            path=get_folder_path(currentframe()),
+            reqs=sys.platform + '_requirements'), 'r') as f:
         reqs = reqs_to_list(f.read())
 
     # Récupère les paquets déjà installés grâce à pip
-    satisfied_reqs = subprocess.check_output(cmd("{python} -m pip freeze".format(python=sys.executable))).decode()
+    satisfied_reqs = subprocess.check_output(command("{python} -m pip freeze".format(python=sys.executable))).decode()
     satisfied_reqs = reqs_to_list(satisfied_reqs)
 
     # Compare reqs and satisfied_reqs pour trouver les dépendances non satisfaites
@@ -100,5 +167,7 @@ def reqs_to_list(reqs: str):
     return reqs
 
 
+check_python_version()
+ensurepip()
 if __name__ == '__main__':
     install_requirements()

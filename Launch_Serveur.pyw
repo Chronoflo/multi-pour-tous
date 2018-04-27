@@ -12,7 +12,10 @@
 # -------------------------------------------------------------------------------
 # noinspection PyBroadException
 from modules import Serveur
+from modules.handyfunctions import  check_python_version
 
+
+check_python_version()
 if __name__ == '__main__':
     Serveur.main()
 else:

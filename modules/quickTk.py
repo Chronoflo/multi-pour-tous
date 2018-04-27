@@ -1,6 +1,8 @@
 # -*- coding: <utf-8> -*-
 """Ce module permet de réaliser rapidement et simplement certaines opérations avec tkinter."""
-import tkinter as tk
+
+from modules import easyimport
+tk = easyimport.tkinter()
 from tkinter import messagebox
 
 
