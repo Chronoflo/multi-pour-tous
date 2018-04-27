@@ -1,0 +1,5 @@
+PyOpenGL
+pillow
+pyautogui
+pywin32
+

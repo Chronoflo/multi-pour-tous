@@ -10,54 +10,43 @@
 # Copyright:   (c) Florian 2018
 # Licence:     <your licence>
 # -------------------------------------------------------------------------------
-# noinspection PyBroadException
-import sys
-from tkinter import messagebox
-
 try:
+    import sys
+    import tkinter as tk
+    from tkinter import messagebox
     from threading import Thread
     from datetime import datetime
     from handyfunctions import *
     import socket as s
     from select import select
-    try:
-        import tkinter as tk
-    except ImportError:
-        pip_install('tkinter')
     import os
     import traceback
-
-
-    # try:
-    #     import pyautogui
-    # except ImportError:
-    #         pip_install('pyautogui')
-    #         import pyautogui
-
-    try:
-        from PIL import Image, ImageTk
-    except ImportError:
-        pip_install('pillow')
-        from PIL import Image, ImageTk
-    if sys.platform == 'windows':
-        try:
-            from win32con import *
-            # noinspection PyUnresolvedReferences
-            import win32api
-            # noinspection PyUnresolvedReferences
-            import win32gui
-        except ImportError:
-            pip_install('pywin32')
-            from win32con import *
-            # noinspection PyUnresolvedReferences
-            import win32api
-            # noinspection PyUnresolvedReferences
-            import win32gui
-
-except Exception as e:
-    print(e)
+    import pyautogui
+    from PIL import Image, ImageTk
+    if sys.platform == 'win32':
+        from win32con import *
+        import win32api
+        import win32gui
+except ImportError as e:
+    from easydependencies import install_requirements
+    print(formatted_error("ImportError : " + str(e)))
+    install_requirements()
+    import sys
     import os
-    os.system('exit')
+    from tkinter import messagebox
+    from threading import Thread
+    from datetime import datetime
+    from handyfunctions import *
+    import socket as s
+    from select import select
+    import tkinter as tk
+    import traceback
+    import pyautogui
+    from PIL import Image, ImageTk
+    if sys.platform == 'win32':
+        from win32con import *
+        import win32api
+        import win32gui
 
 LEFT = 0
 TOP = 1
@@ -174,7 +163,7 @@ class Stream:
 
     def __init__(self, dest_widget, src_hdl=0x00010010):
         """Crée un stream."""
-        if sys.platform == 'windows':
+        if sys.platform == 'win32':
             self._destWidget = dest_widget
             self._src_hdl = src_hdl
 
@@ -203,7 +192,7 @@ class Stream:
 
     def launch(self, src_hdl=None, fps=24):
         """Lance le stream."""
-        if sys.platform == 'windows':
+        if sys.platform == 'win32':
             if src_hdl is None:
                 src_hdl = self._src_hdl
             log.add("Début stream.")
@@ -217,7 +206,7 @@ class Stream:
 
     def stop(self):
         """Arrête le stream."""
-        if sys.platform == 'windows':
+        if sys.platform == 'win32':
             self._hasToRun = False
             self.timer.cancel()
         elif sys.platform == 'linux':
@@ -226,7 +215,7 @@ class Stream:
 
     def refresh(self, src_hdl, fps):
         """Met à jour les paramètres du stream."""
-        if sys.platform == 'windows':
+        if sys.platform == 'win32':
             if isinstance(src_hdl, str):
                 if not src_hdl == "" and not src_hdl == entry_hint:
                     self._src_hdl = int(src_hdl, 16)
@@ -263,7 +252,7 @@ class Stream:
 
     def run(self):
         """Fonction qui est appelé en boucle."""
-        if sys.platform == 'windows':
+        if sys.platform == 'win32':
             # Copie le DC de la source vers le DC de destination en le redimensionnant
             win32gui.StretchBlt(
                 self.dest_window_dc,
@@ -360,7 +349,7 @@ class IHM(MyFrame):
 
         def send_test(msg: str="Message de Test"):
             self._app.broadcast(msg)
-        if sys.platform == 'windows':
+        if sys.platform == 'win32':
             def find_window(source_handle=0x00010100, dest_widget=self.tv):
                 """Trouve la fenêtre spécifiée à l'aide de source_handle puis la copie sur le DC de dest_widget."""
                 if isinstance(source_handle, str):
@@ -525,7 +514,7 @@ class ServerThread(Thread):
             log.add(formatted_error("Error : " + error.strerror))
             messagebox.showerror("Mise en place serveur",
                                  "Une erreur est survenue, êtes vous sûr qu'un autre serveur ne tourne pas déjà?")
-            if sys.platform == 'windows':
+            if sys.platform == 'win32':
                 self._app.terminate()
             elif sys.platform == 'linux':
                 """TODO : Madame Surleweb, o`u êtes vous ?"""

@@ -1,16 +1,5 @@
 #!/usr/bin/python
 # -*- coding: <utf-8> -*-
-
-
-def pip_install(package_name: str):
-    """Installe un paquet à l'aide de pip."""
-    if isinstance(package_name, str):
-        import pip
-        pip.main(['install', package_name])
-    else:
-        raise TypeError("package_name should be a string.")
-
-
 import traceback
 from datetime import datetime
 from threading import Timer, Lock
@@ -18,18 +7,15 @@ from socket import gethostname
 from os import makedirs
 import tkinter as tk
 
-
 ADDRESS = gethostname()
 PORT = 3400
 KEY = 0
 GAMEPAD = 1
 MOUSE = 2
 
-line_width = len("//SuperServeur::2018/04/06::00:03:48 : Application terminée.") * 3
-
+line_width = len("C:/Users/Florian>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\
+aaaaaaaaaaaaaaaaaaa")
 user_names = ['Robert', 'Sartres', 'Oui-Oui', 'Jean-Phillipe', 'Gros Jean', 'Martine', 'La Grosse Bertha']
-# log = None
-# eventLog = None
 
 
 class Themes:
@@ -583,28 +569,6 @@ def write_to_file(path, data):
     else:
         return False
 
-def make_invisible(win: tk.Tk):
-    """Rend une fenêtre Tk invisible.
-    :param win: Une fenêtre Tk."""
-    win.geometry("+{}+{}".format(win.winfo_screenwidth() * 2, win.winfo_screenheight() * 2))
-
-def center(win):
-    """
-    Centre une fenêtre Tk.
-    :param win: the root or Toplevel window to center
-    """
-    win.update_idletasks()
-    width = win.winfo_width()
-    frm_width = win.winfo_rootx() - win.winfo_x()
-    win_width = width + 2 * frm_width
-    height = win.winfo_height()
-    titlebar_height = win.winfo_rooty() - win.winfo_y()
-    win_height = height + titlebar_height + frm_width
-    x = win.winfo_screenwidth() // 2 - win_width // 2
-    y = win.winfo_screenheight() // 2 - win_height // 2
-    win.geometry('{}x{}+{}+{}'.format(width, height, x, y))
-    win.deiconify()
-
 
 def configure_columns_rows(tk_obj, n_columns: int, n_rows: int, clmn_weights: list = None, row_weights: list = None):
     """"Facilite la configuration des colonnes et des lignes de grid d'un objet Tk."""
@@ -684,6 +648,7 @@ def _switch_theme(root, main_frame):
 
 
 def main():
+    from quickTk import make_invisible, center
     root = MyTkApp(theme=Themes.dark)
     make_invisible(root)
     configure_columns_rows(root, 1, 1)
