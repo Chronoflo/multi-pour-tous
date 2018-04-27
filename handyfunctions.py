@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # -*- coding: <utf-8> -*-
 
-from modules import easyimport
+import easyimport
+
 tk = easyimport.tkinter()
 import traceback
 from datetime import datetime
@@ -688,9 +689,9 @@ def _switch_theme(root, main_frame):
 
 
 def main():
-    from modules.quickTk import disappear, center
+    from quickTk import make_invisible, center
     root = MyTkApp(theme=Themes.dark)
-    disappear(root)
+    make_invisible(root)
     configure_columns_rows(root, 1, 1)
     _create_main_frame(root)
     center(root)

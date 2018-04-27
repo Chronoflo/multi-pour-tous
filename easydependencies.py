@@ -18,8 +18,8 @@ vérification et d'installation.
 import sys
 import subprocess
 from inspect import currentframe
-from modules.handyfunctions import command, check_vars_types, check_python_version, get_folder_path
-from modules.quickTk import warning, info, error
+from handyfunctions import command, check_vars_types, check_python_version, get_folder_path
+from quickTk import warning, info, error
 
 
 check_title = "Vérification "

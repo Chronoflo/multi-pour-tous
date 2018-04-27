@@ -11,8 +11,8 @@
 # Licence:     <your licence>
 # -------------------------------------------------------------------------------
 # noinspection PyBroadException
-from modules import Serveur
-from modules.handyfunctions import  check_python_version
+import Serveur
+from handyfunctions import  check_python_version
 
 
 check_python_version()
