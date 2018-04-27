@@ -543,6 +543,20 @@ def is_slash(char: str):
         raise ValueError("char should be a single character.")
 
 
+def get_folder_path(obj):
+    """ le chemin du dossier dans lequel se trouve un fichier."""
+    import inspect
+    if isinstance(obj, type(inspect.currentframe())):
+        full_path = inspect.getfile(obj)
+        for i, v in enumerate(full_path[::-1]):
+            if is_slash(v):
+                folder_path = full_path[:-i]
+                break
+        return folder_path
+    else:
+        raise TypeError("Type de l'objet non supporté.")
+
+
 def check_path(path):
     """Vérifie que le chemin existe et crée les dossiers nécessaires le cas échéant."""
     path = str(path)
@@ -568,6 +582,11 @@ def write_to_file(path, data):
         return True
     else:
         return False
+
+
+def cmd(command: str):
+    """Retourne une commande écrite comme une phrase sous la forme d'une liste. (ex : sert pour subprocess)"""
+    return [i for i in command.split(" ") if i != " "]
 
 
 def configure_columns_rows(tk_obj, n_columns: int, n_rows: int, clmn_weights: list = None, row_weights: list = None):

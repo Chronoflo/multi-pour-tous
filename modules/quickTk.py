@@ -20,6 +20,10 @@ def info(title, msg):
     dialog(lambda t=title, m=msg: messagebox.showinfo(t, m))
 
 
+def error(title, msg):
+    dialog(lambda t=title, m=msg: messagebox.showerror(t, m))
+
+
 def make_invisible(win: tk.Tk):
     """Rend une fenêtre Tk invisible.
     :param win: Une fenêtre Tk.
