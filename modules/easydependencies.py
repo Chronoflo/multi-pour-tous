@@ -22,11 +22,11 @@ from modules.handyfunctions import command, check_vars_types, check_python_versi
 from modules.quickTk import warning, info, error
 
 
-check_title = "Dépendances-Vérification "
+check_title = "Vérification "
 check_success_msg = "Parfait !\nToutes les dépendances sont satisfaites.\nVous pouvez maintenant profitez de ce \
 magnifique programme."
 check_error_msg = "lol"
-install_title = "Dépendances-Installation"
+install_title = "Installation"
 install_start_msg = "Les dépendances manquantes vont maintenant être installées.\n\nAttention, cela peut prendre un long \
  moment (jusqu'à dix minutes). Une autre boîte de dialogue vous avertira de la fin."
 install_error_msg = "Diantre :(\nUne erreur est survenue lors de l'installation.\nÊtes-vous sûr que tous les paquets \
