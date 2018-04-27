@@ -11,7 +11,7 @@
 # Licence:     <your licence>
 # -------------------------------------------------------------------------------
 # noinspection PyBroadException
-import Serveur
+from modules import Serveur
 
 if __name__ == '__main__':
     Serveur.main()
