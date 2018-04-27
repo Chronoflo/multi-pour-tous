@@ -648,7 +648,7 @@ def _switch_theme(root, main_frame):
 
 
 def main():
-    from quickTk import make_invisible, center
+    from modules.quickTk import make_invisible, center
     root = MyTkApp(theme=Themes.dark)
     make_invisible(root)
     configure_columns_rows(root, 1, 1)

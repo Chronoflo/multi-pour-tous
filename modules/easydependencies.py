@@ -3,7 +3,7 @@
 
 from sys import platform
 import pip
-from quickTk import warning, info
+from modules.quickTk import warning, info
 
 install_title = "Installing dependencies"
 install_start_msg = "Les paquets manquants vont maintenant être installés. Attention, cela peut prendre un long moment \
