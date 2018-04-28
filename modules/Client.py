@@ -83,6 +83,7 @@ class Application(MyTkApp):
         self._is_connected = False
 
         log.add("Application démarrée.")
+    # TODO : mieux gérer les appuis touches pour éviter les envois d'informations inutiles
 
     def on_key_press(self, event):
         if (time() - self._key_pressed[event.keysym]) > 0.1:
