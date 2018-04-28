@@ -115,8 +115,8 @@ class HandyIndexGenerator:
 
 class MyTkApp(tk.Tk):
     """MyTkApp hérite de tkinter.Tk en rajoutant comme propriété un thème."""
-    def __init__(self, theme=Themes.default(), log=None, event_log=None, screenName=None, baseName=None,
-                 className='MyTkApp', useTk=1, sync=0, use=None):
+    def __init__(self, theme=Themes.default(), log=None, event_log=None, screen_name=None, base_name=None,
+                 class_name='MyTkApp', use_tk=1, sync=0, use=None):
         """
         Construit un objet MyTkApp.
         :param theme: permet de spécifier un thème si l'on ne souhaite pas utiliser le thème par défaut
@@ -124,7 +124,7 @@ class MyTkApp(tk.Tk):
         self.theme = theme
         self.log = log
         self.eventLog = event_log
-        super().__init__(screenName, baseName, className, useTk, sync, use)
+        super().__init__(screen_name, base_name, class_name, use_tk, sync, use)
 
     def to_log(self, msg):
         if self.log is not None:
@@ -531,7 +531,7 @@ def check_vars_types(*var_tuples, internal_check=False):
         raise ValueError("")  # TODO : faire un message plus cool
 
     for index, var_tuple in enumerate(var_tuples):
-        # Ajoute Faux par défault s'il n'y a pas les quatres paramètres
+        # Ajoute Faux par défaut s'il n'y a pas les quatres paramètres
         if len(var_tuple) == 3:
             var_tuple = var_tuple + (False,)
             var_tuples[index] = var_tuple
@@ -572,15 +572,17 @@ def is_slash(char: str):
 def take_part(string: str, side: int, sep_chars: str, start_from: int, no_mods_chars: str = "", take_sep_char=False):
     """
     Retourne une partie d'une chaîne de caractères à partir du premier séparateur trouvé. Si aucun n'est trouvé, cette
-    chaîne de caractères est renvoyée tel quel.
-    :param string: la chaîne de caractères à couper
-    :param side: le côté à garder à partir du séparateur trouvé
-    :param sep_chars: les caractères qui sont des séparateurs
-    :param start_from: le côté du quel partir
-    :param no_mods_chars: si un de ces caractères est trouvé en premier, string n'est pas modifié
-    :param take_sep_char: si la partie de string renvoyée doit inclure le séparateur trouvé
-    :return: string ou une partie de string
+    chaîne de caractères est renvoyée telle quelle.
+
+    :param string: La chaîne de caractères à couper.
+    :param side: Le côté à garder à partir du séparateur trouvé.
+    :param sep_chars: Les caractères qui sont des séparateurs.
+    :param start_from: Le côté du quel partir.
+    :param no_mods_chars: Si un de ces caractères est trouvé en premier, string n'est pas modifié.
+    :param take_sep_char: Si la partie de string renvoyée doit inclure le séparateur trouvé.
+    :return: Retourne string ou une partie de string.
     """
+
     check_vars_types(
         (string, 'path', str),
         (side, 'side', int),
@@ -662,7 +664,7 @@ def write_to_file(path, data):
         return False
 
 
-def command(cmd: str):
+def to_command(cmd: str):
     """Retourne une commande écrite comme une phrase sous la forme d'une liste. (ex : sert pour subprocess)"""
     return [i for i in cmd.split(" ") if i != " "]
 
@@ -686,6 +688,7 @@ def configure_columns_rows(tk_obj, n_columns: int, n_rows: int, clmn_weights: li
             tk_obj.rowconfigure(index=i, weight=1)
 
 
+# noinspection PyUnusedLocal
 def make_line(char, end='\n'):
     """Retourne une ligne faite à partir de char et de end"""
     char = str(char)
@@ -766,4 +769,3 @@ if __name__ == '__main__':
     ExampleLog = Log('ExampleLog')
     main()
     Log.final_save_all()
-

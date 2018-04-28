@@ -6,11 +6,11 @@ vérification et d'installation.
 
  • ensure_pip : s'assure que pip est installé
  • pip_install : installe un/des paquets à l'aide de pip
- • pip_uninstall : désintalle un/des paquets à l'aide de pip
+ • pip_uninstall : désinstalle un/des paquets à l'aide de pip
  • pip_check : vérifie que les paquets installés ont des dépendances compatibles
  • pip_command : exécute une commande pip
  • install_requirements : vérifie les dépendances et installent celles qui manquent
- • uninstall_requirements : désintalle toutes les dépendances
+ • uninstall_requirements : désinstalle toutes les dépendances
  • get_unsatisfied_reqs : renvoie les dépendances manquantes
  • reqs_to_list : convertit une string, qui suit la convention de pip, en une liste de dépendances
 """
@@ -18,7 +18,7 @@ vérification et d'installation.
 import sys
 from os import system
 import subprocess
-from modules.handyfunctions import command, check_vars_types, check_python_version, get_modules_path, get_python, \
+from modules.handyfunctions import to_command, check_vars_types, check_python_version, get_modules_path, get_python, \
     take_part, LEFT, BEFORE
 from modules.quickTk import warning, info, error
 from importlib.util import find_spec
@@ -91,7 +91,7 @@ def pip_check():
 def pip_command(cmd: str):
     """Execute une commande pip."""
     check_vars_types(cmd, 'cmd', str)
-    subprocess.check_call(command("{python} -m pip {cmd}".format(
+    subprocess.check_call(to_command("{python} -m pip {cmd}".format(
         python=python,
         cmd=cmd
     )))
@@ -149,7 +149,7 @@ def get_unsatisfied_reqs():
         reqs = reqs_to_list(f.read())
 
     # Récupère les paquets déjà installés grâce à pip
-    satisfied_reqs = subprocess.check_output(command("{python} -m pip freeze".format(python=python))).decode()
+    satisfied_reqs = subprocess.check_output(to_command("{python} -m pip freeze".format(python=python))).decode()
     satisfied_reqs = reqs_to_list(satisfied_reqs)
 
     # Compare reqs and satisfied_reqs pour trouver les dépendances non satisfaites

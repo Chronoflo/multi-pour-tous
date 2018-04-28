@@ -397,7 +397,10 @@ class IHM(MyFrame):
                 win32gui.SelectObject(mem_dc, source_bitmap)
         else:
             def find_window(*args, **kwargs):
-                pass
+                for arg in args:
+                    del arg
+                for kwarg in kwargs:
+                    del kwarg
 
         self.tv.grid(column=0, row=0, columnspan=3, sticky="nesw")
         self.tv.create_image(0, 0, image=self.default_photo, anchor='nw')

@@ -42,6 +42,7 @@ def disappear(win: tk.Tk):
 def center(win, rel_x=0, rel_y=0, harsh=False):
     """
     Centre une fenêtre Tk.
+    :param harsh:
     :param win: the root or Toplevel window to center
     :param rel_x: le décalage en x par rapport au centre
     :param rel_y: le décalage en y par rapport au centre

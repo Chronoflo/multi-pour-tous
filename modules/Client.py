@@ -12,13 +12,15 @@
 # -------------------------------------------------------------------------------
 # TODO : toute la partie réseau est à refaire
 import sys
+
 try:
     import socket as sokt
     import traceback
 
     from modules.handyfunctions import *
     from PIL import Image, ImageTk
-    if sys.platform == 'windows':
+
+    if sys.platform == 'win32':
         import win32gui
         import win32api
         from win32con import *
@@ -28,7 +30,6 @@ try:
 except Exception as e:
     print(e)
     input()
-
 
 LEFT = 0
 TOP = 1
@@ -147,8 +148,8 @@ class Application(MyTkApp):
             pass
         try:
             self.destroy()
-        except tk.TclError as e:
-            log.add(str(e))
+        except tk.TclError as err:
+            log.add(str(err))
         log.add("Application terminée.")
 
     def test(self):
@@ -224,10 +225,10 @@ class IHM(MyFrame):
     def place_and_create_widgets(self):
         """Place tous les widgets et en crée certains sans références."""
 
-        def send_test(msg: str="Message de Test"):
+        def send_test(msg: str = "Message de Test"):
             self._app.broadcast(msg)
 
-        if sys.platform == 'windows':
+        if sys.platform == 'win32':
             def find_window(source_handle=0x00010100, dest_widget=self.tv):
                 """Trouve la fenêtre spécifiée à l'aide de source_handle puis la copie sur le DC de dest_widget."""
                 if isinstance(source_handle, str):
@@ -268,6 +269,7 @@ class IHM(MyFrame):
                 win32gui.SelectObject(mem_dc, source_bitmap)
         else:
             """TODO"""
+
             def find_windows(*args, **kwargs):
                 pass
 
@@ -295,7 +297,7 @@ class IHM(MyFrame):
                                                               row=g.same(),
                                                               sticky='ew')
         MyButton(self.buttons_group, text="Quit", command=self.master.terminate).grid(column=mid_clmn, row=g.next(),
-                                                                                   sticky='ew')
+                                                                                      sticky='ew')
         configure_columns_rows(self.buttons_group, 5, g.get_n_given_ids(), clmn_weights=[1, 6, 6, 6, 1])
         del g
         # Fin buttons_frame
