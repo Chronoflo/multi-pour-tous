@@ -560,6 +560,18 @@ def is_slash(char: str):
         raise ValueError("char should be a single character.")
 
 
+def get_python():
+    from sys import executable
+    interpreter_path = executable
+    for i, v in enumerate(interpreter_path[::-1]):
+        if v == '.':
+            interpreter_path = interpreter_path[:-i-1]
+            break
+        elif is_slash(v):
+            break
+    return interpreter_path
+
+
 def get_folder_path(frame_obj):
     """ le chemin du dossier dans lequel se trouve un fichier."""
     check_vars_types(frame_obj, 'frame_obj', type(currentframe()))

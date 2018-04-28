@@ -18,10 +18,11 @@ vérification et d'installation.
 import sys
 from os import system
 import subprocess
-from modules.handyfunctions import command, check_vars_types, check_python_version, get_modules_path
+from modules.handyfunctions import command, check_vars_types, check_python_version, get_modules_path, get_python
 from modules.quickTk import warning, info, error
 from importlib.util import find_spec
 
+python = get_python()
 
 check_title = "Vérification "
 check_success_msg = "Parfait !\nToutes les dépendances sont satisfaites.\nVous pouvez maintenant profitez de ce \
@@ -90,7 +91,7 @@ def pip_command(cmd: str):
     """Execute une commande pip."""
     check_vars_types(cmd, 'cmd', str)
     subprocess.check_call(command("{python} -m pip {cmd}".format(
-        python=sys.executable,
+        python=python,
         cmd=cmd
     )))
 
@@ -147,7 +148,7 @@ def get_unsatisfied_reqs():
         reqs = reqs_to_list(f.read())
 
     # Récupère les paquets déjà installés grâce à pip
-    satisfied_reqs = subprocess.check_output(command("{python} -m pip freeze".format(python=sys.executable))).decode()
+    satisfied_reqs = subprocess.check_output(command("{python} -m pip freeze".format(python=python))).decode()
     satisfied_reqs = reqs_to_list(satisfied_reqs)
 
     # Compare reqs and satisfied_reqs pour trouver les dépendances non satisfaites
