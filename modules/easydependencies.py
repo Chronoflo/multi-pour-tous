@@ -17,7 +17,6 @@ vérification et d'installation.
 
 import sys
 import subprocess
-from inspect import currentframe
 from modules.handyfunctions import command, check_vars_types, check_python_version, get_modules_path
 from modules.quickTk import warning, info, error
 
