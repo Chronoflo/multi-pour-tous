@@ -16,9 +16,11 @@ vérification et d'installation.
 """
 
 import sys
+from os import system
 import subprocess
 from modules.handyfunctions import command, check_vars_types, check_python_version, get_modules_path
 from modules.quickTk import warning, info, error
+from importlib.util import find_spec
 
 
 check_title = "Vérification "
@@ -33,17 +35,26 @@ listées dans les requirements existent ?\nL'application va maintenant quitter."
 install_end_msg = "Processus d'installation terminée. Normalement, tout devrait être bon !"
 
 
-def ensurepip():
-    """S'assure que pip est installé"""
-    from importlib.util import find_spec
+def ensure_pip():
+    """S'assure que pip est installé."""
     pip_found = find_spec("pip") is not None
-
     if not pip_found:
         if sys.platform == 'linux':
-            from os import system
-            system("sudo apt-get install python3-pip")
+            warning("Installation", "Pip n'est pas installé et son installation va donc être lancée.")
+            system("sudo apt-get --yes --force-yes update && sudo apt-get --yes --force-yes install python3-pip")
         else:
             print("Je sais pas quoi faire :'( ")
+
+
+def ensure_tkinter():
+    """S'assure que tkinter est installé."""
+    tkinter_found = find_spec("tkinter") is not None
+    if not tkinter_found:
+        if sys.platform == 'linux':
+            warning("Installation", "Tkinter n'est pas installé et va donc maintenant l'être.")
+            system("sudo apt-get --yes --force-yes install python3-tk")
+        else:
+            error("C'est la hess", "JE SAIS PAS QUOI FAIRE")
 
 
 def pip_install(packages):
@@ -167,6 +178,6 @@ def reqs_to_list(reqs: str):
 
 
 check_python_version()
-ensurepip()
+ensure_pip()
 if __name__ == '__main__':
     install_requirements()

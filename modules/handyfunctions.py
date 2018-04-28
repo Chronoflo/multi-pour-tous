@@ -1,7 +1,11 @@
 #!/usr/bin/python
 # -*- coding: <utf-8> -*-
-
-from modules.easyimport import tkinter as tk
+try:
+    import tkinter as tk
+except ImportError:
+    from modules.easydependencies import ensure_tkinter
+    ensure_tkinter()
+    import tkinter as tk
 import traceback
 from datetime import datetime
 from threading import Timer, Lock

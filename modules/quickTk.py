@@ -1,8 +1,16 @@
 # -*- coding: <utf-8> -*-
 """Ce module permet de réaliser rapidement et simplement certaines opérations avec tkinter."""
+try:
+    import tkinter as tk
+    from tkinter import messagebox
+except ImportError:
+    from modules.easydependencies import ensure_tkinter
+    ensure_tkinter()
 
-from modules.easyimport import tkinter as tk
-from tkinter import messagebox
+    import tkinter as tk
+    from tkinter import messagebox
+
+
 
 
 def dialog(msg_box):

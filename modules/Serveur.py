@@ -30,8 +30,8 @@ try:
         import win32gui
 except ImportError as e:
     from modules.easydependencies import install_requirements
-    print(formatted_error("ImportError : " + str(e)))
     install_requirements()
+
     import sys
     import os
     from tkinter import messagebox
