@@ -18,7 +18,8 @@ vérification et d'installation.
 import sys
 from os import system
 import subprocess
-from modules.handyfunctions import command, check_vars_types, check_python_version, get_modules_path, get_python
+from modules.handyfunctions import command, check_vars_types, check_python_version, get_modules_path, get_python, \
+    take_part, LEFT, BEFORE
 from modules.quickTk import warning, info, error
 from importlib.util import find_spec
 
@@ -165,14 +166,12 @@ def reqs_to_list(reqs: str):
     check_vars_types((reqs, 'reqs', str))
     # Fait une liste en séparant à l'aide de \n, et en enlevant les espaces, les \n, et les éléments vides
     reqs = [i for i in reqs.split("\n") if i not in "\n " and len(i) != 0]
+
+    # Parcourt les différentes dépendances
     for i, req in enumerate(reqs):
-        if req in "\n " or len(req) == 0:
-            del reqs[i]
-        else:
-            for j, letter in enumerate(req):
-                if letter == '=':
-                    reqs[i] = req[:j]
-                    break
+        # Ne garde que la partie située avant le égal en partant de la gauche
+        reqs[i] = take_part(req, BEFORE, '=', start_from=LEFT)
+
     # Met tout en minuscule
     reqs = [i.lower() for i in reqs]
     return reqs
@@ -180,5 +179,6 @@ def reqs_to_list(reqs: str):
 
 check_python_version()
 ensure_pip()
+ensure_tkinter()
 if __name__ == '__main__':
     install_requirements()

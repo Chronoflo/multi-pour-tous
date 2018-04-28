@@ -15,9 +15,15 @@ from os import makedirs
 
 ADDRESS = gethostname()
 PORT = 3400
+
 KEY = 0
 GAMEPAD = 1
 MOUSE = 2
+
+BEFORE = 1
+AFTER = -1
+LEFT = 1
+RIGHT = -1
 
 line_width = len("C:/Users/Florian>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\
 aaaaaaaaaaaaaaaaaaa")
@@ -410,7 +416,7 @@ class Log:
 
     @classmethod
     def save_all(cls):
-        """Sauvegarde tous les logs crées. TODO : c'est nul"""
+        """Sauvegarde tous les logs crées."""
         for log in cls._created_logs:
             log.save()
 
@@ -551,6 +557,9 @@ def check_vars_types(*var_tuples, internal_check=False):
             raise TypeError("'{}' devrait être de type {} mais est de type {}.".format(var_name, var_type, type(var)))
 
 
+# TODO : check_vars_values
+
+
 def is_slash(char: str):
     """Retourne Vrai si char est un slash."""
     char = str(char)
@@ -560,16 +569,48 @@ def is_slash(char: str):
         raise ValueError("char should be a single character.")
 
 
+def take_part(string: str, side: int, sep_chars: str, start_from: int, no_mods_chars: str = "", take_sep_char=False):
+    """
+    Retourne une partie d'une chaîne de caractères à partir du premier séparateur trouvé. Si aucun n'est trouvé, cette
+    chaîne de caractères est renvoyée tel quel.
+    :param string: la chaîne de caractères à couper
+    :param side: le côté à garder à partir du séparateur trouvé
+    :param sep_chars: les caractères qui sont des séparateurs
+    :param start_from: le côté du quel partir
+    :param no_mods_chars: si un de ces caractères est trouvé en premier, string n'est pas modifié
+    :param take_sep_char: si la partie de string renvoyée doit inclure le séparateur trouvé
+    :return: string ou une partie de string
+    """
+    check_vars_types(
+        (string, 'path', str),
+        (side, 'side', int),
+        (sep_chars, 'sep_chars', str),
+        (start_from, 'start_from', int),
+        (no_mods_chars, 'no_mods_chars', str)
+    )
+    # TODO : ajouter une vérification des valeurs de side et start_from
+    for v in sep_chars:
+        if v in no_mods_chars:
+            raise ValueError("Un caractère se trouve à la fois dans sep_chars et no_mods_chars.")
+    for i, v in enumerate(string[::start_from]):
+        if v in sep_chars:
+            if side == AFTER and start_from == RIGHT:
+                return string[-i - take_sep_char:]
+            elif side == BEFORE and start_from == RIGHT:
+                return string[: - i - 1 + take_sep_char]
+            elif side == AFTER and start_from == LEFT:
+                return string[i + 1 - take_sep_char:]
+            elif side == BEFORE and start_from == LEFT:
+                return string[: i + take_sep_char]
+        if v in no_mods_chars:
+            break
+
+    return string
+
+
 def get_python():
     from sys import executable
-    interpreter_path = executable
-    for i, v in enumerate(interpreter_path[::-1]):
-        if v == '.':
-            interpreter_path = interpreter_path[:-i-1]
-            break
-        elif is_slash(v):
-            break
-    return interpreter_path
+    return take_part(executable, BEFORE, '.', start_from=RIGHT, no_mods_chars='/\\')
 
 
 def get_folder_path(frame_obj):
@@ -577,42 +618,34 @@ def get_folder_path(frame_obj):
     check_vars_types(frame_obj, 'frame_obj', type(currentframe()))
 
     full_path = getfile(frame_obj)
-    folder_path = None
-    for i, v in enumerate(full_path[::-1]):
-        if is_slash(v):
-            folder_path = full_path[:-i - 1]
-            break
+    folder_path = take_part(full_path, BEFORE, "/\\", start_from=RIGHT)
     return folder_path
 
 
 def get_modules_path():
     """Retourne le chemin absolu du dossier modules."""
     # Récupère le chemin du dossier contenant handyfunctions.py
-    modules_path = get_folder_path(currentframe())
+    folder_path = get_folder_path(currentframe())
+
+    # Récupère le nom de ce dossier
+    folder_name = take_part(folder_path, AFTER, '/\\', start_from=RIGHT)
 
     # Vérifie que le nom de ce dossier est bien module
-    folder_name = None
-    for i, v in enumerate(modules_path[::-1]):
-        if is_slash(v):
-            folder_name = modules_path[-i:]
-            break
     if folder_name != 'modules' or folder_name is None:
         raise Exception("Le dossier dans lequel se trouve handyfunctions.py n'est pas modules.")
 
-    return modules_path
+    return folder_path
 
 
 def check_path(path):
     """Vérifie que le chemin existe et crée les dossiers nécessaires le cas échéant."""
-    path = str(path)
-    path_to_check = ""
+    check_vars_types(path, 'path', str)
+
     # Récupère le chemin jusqu'au dernier slash
-    for i, letter in enumerate(path[::-1]):
-            if is_slash(letter):
-                path_to_check = path[:-i]
-                break
+    path_to_check = take_part(path, BEFORE, '/\\', start_from=RIGHT)
+
     # Crée les dossiers correspondants s'ils n'existent pas déjà.
-    if path_to_check:
+    if path_to_check is not None:
         makedirs(path_to_check, exist_ok=True)
     else:
         print("Il n'y avait pas de dossiers à vérifier.")
@@ -629,9 +662,9 @@ def write_to_file(path, data):
         return False
 
 
-def command(command: str):
+def command(cmd: str):
     """Retourne une commande écrite comme une phrase sous la forme d'une liste. (ex : sert pour subprocess)"""
-    return [i for i in command.split(" ") if i != " "]
+    return [i for i in cmd.split(" ") if i != " "]
 
 
 def configure_columns_rows(tk_obj, n_columns: int, n_rows: int, clmn_weights: list = None, row_weights: list = None):
@@ -733,3 +766,4 @@ if __name__ == '__main__':
     ExampleLog = Log('ExampleLog')
     main()
     Log.final_save_all()
+

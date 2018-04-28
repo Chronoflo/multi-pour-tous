@@ -11,8 +11,6 @@ except ImportError:
     from tkinter import messagebox
 
 
-
-
 def dialog(msg_box):
     tmp_root = tk.Tk()
     disappear(tmp_root)

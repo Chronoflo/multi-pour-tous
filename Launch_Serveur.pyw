@@ -16,7 +16,6 @@ from modules.handyfunctions import check_python_version, get_python
 
 check_python_version()
 if __name__ == '__main__':
-    print(get_python())
     Serveur.main()
 else:
     print("Launch_Serveur shouldn't be called from another module.")
