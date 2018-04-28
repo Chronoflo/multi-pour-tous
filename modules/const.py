@@ -1,0 +1,5 @@
+KEYPRESS = 'P'
+KEYUP = 'U'
+KEYMSG = 'K'
+TEXTMSG = 'M'
+MSGSEP = "\r"

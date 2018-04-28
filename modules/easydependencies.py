@@ -42,7 +42,7 @@ def ensure_pip():
     except ImportError:
         if sys.platform == 'linux':
             print("Installation", "Pip n'est pas installé et son installation va donc être lancée.")
-            system("sudo apt-get --yes --force-yes update && sudo apt-get --yes --force-yes install python3-pip")
+            system("sudo apt-get --yes --allow-yes=true update && sudo apt-get --yes --force-yes install python3-pip")
         else:
             print("Je sais pas quoi faire :'( ")
         import pip
@@ -55,10 +55,20 @@ def ensure_tkinter():
     except ImportError:
         if sys.platform == 'linux':
             print("Tkinter n'est pas installé et va donc maintenant l'être.")
-            system("sudo apt-get --yes --force-yes install python3-tk")
+            system("sudo apt-get --yes --allow-yes=true install python3-tk")
         else:
             print("C'est la hess, JE. SAIS. PAS. QUOI. FAIRE.")
         import tkinter
+
+
+def ensure_glut():
+    """S'assure que glut est installé."""
+    if sys.platform == 'linux':
+        system("sudo apt-get --yes --allow-yes=true install freeglut3-dev")
+    elif sys.platform == 'win32':
+        pass  # En théorie glut est installé par défaut sur windows avec pyopengl
+    else:
+        raise OSError("C'est la galère mec, je sais pas quoi faire sur cet OS")
 
 
 def pip_install(packages):
@@ -105,6 +115,7 @@ def install_requirements():
     """
     ensure_pip()
     ensure_tkinter()
+    ensure_glut()
     from modules.quickTk import warning, info, error
     reqs_not_satisfied = get_unsatisfied_reqs()
     if reqs_not_satisfied:
@@ -185,5 +196,6 @@ def reqs_to_list(reqs: str):
 check_python_version()
 ensure_pip()
 ensure_tkinter()
+ensure_glut()
 if __name__ == '__main__':
     install_requirements()

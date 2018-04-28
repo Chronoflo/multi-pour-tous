@@ -10,6 +10,7 @@
 # Copyright:   (c) Florian 2018
 # Licence:     <your licence>
 # -------------------------------------------------------------------------------
+from modules.const import KEYMSG, KEYPRESS, KEYUP, MSGSEP
 from modules.myTk import *
 
 try:
@@ -567,22 +568,31 @@ class RecvData(Thread):
                     60)
 
             if ready_to_read:
-                msg = self._socket.recv(2048).decode('utf8')
-                if msg != "":
-                    log.add('Message reçu : "' + msg + '"')
+                msgs = self._socket.recv(2048).decode('utf8')
+                if msgs:
+                    for msg in msgs.split(MSGSEP):
+                        if msg:
+                            if msg[0] == KEYMSG:
+                                key = msg[2:]
+                                if msg[1] == KEYPRESS:
+                                    print(key + str(" pressed."))
+                                if msg[1] == KEYUP:
+                                    print(key + str(" released."))
+                            else:
+                                log.add('Message reçu : "' + msg + '"')
 
-                    if msg == "q" or msg == "s":
-                        self._app.terminate()
-                        if msg == "s":
-                            os.system('shutdown -s')
-                    elif msg == "b":
-                        self._app.broadcast("Ceci est un broadcast !")
-                    elif msg == "Q":
-                        self._app.broadcast("Q")
-                    elif msg == "n":
-                        self._app.broadcast(
-                            str(Client.number_of_clients) +
-                            " clients sont connectés.")
+                                if msg == "q" or msg == "s":
+                                    self._app.terminate()
+                                    if msg == "s":
+                                        os.system('shutdown -s')
+                                elif msg == "b":
+                                    self._app.broadcast("Ceci est un broadcast !")
+                                elif msg == "Q":
+                                    self._app.broadcast("Q")
+                                elif msg == "n":
+                                    self._app.broadcast(
+                                        str(Client.number_of_clients) +
+                                        " clients sont connectés.")
             if in_error:
                 self._master.disconnect()
 

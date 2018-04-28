@@ -12,41 +12,40 @@
 # -------------------------------------------------------------------------------
 # TODO : toute la partie réseau est à refaire
 
-try:
-    import sys
-    import socket as sokt
-    import traceback
+import sys
+import traceback
+from threading import Thread
+import socket as sokt
+from select import select
+from time import time
 
+from modules.const import *
+
+try:
+    from modules.myTk import *
     from modules.handyfunctions import *
     from PIL import Image, ImageTk
+    from cyordereddict import OrderedDict
+    from orderedset import OrderedSet
 
     if sys.platform == 'win32':
         import win32gui
         import win32api
         from win32con import *
-
-    from modules.myTk import *
-    from threading import Thread
-    from select import select
 except ImportError:
     from modules.easydependencies import install_requirements
     install_requirements()
 
-    import sys
-    import socket as sokt
-    import traceback
-
+    from modules.myTk import *
     from modules.handyfunctions import *
     from PIL import Image, ImageTk
+    from cyordereddict import OrderedDict
+    from orderedset import OrderedSet
 
     if sys.platform == 'win32':
         import win32gui
         import win32api
         from win32con import *
-
-    from modules.myTk import *
-    from threading import Thread
-    from select import select
 
 
 LEFT = 0
@@ -74,19 +73,48 @@ class Application(MyTkApp):
         self.recvDataThread = RecvDataThread(main_thread=self)
         self.sendDataThread = SendDataThread(main_thread=self)
 
-        self.bind('<Key>', lambda event, type_key=KEY: self.send_key(type_key, event))
+        self._key_pressed = OrderedDict()
+        import string
+        for letter in string.ascii_lowercase:
+            self._key_pressed[letter] = 0
+        self.bind('<Key>', self.on_key_press)
+        self.bind('<KeyRelease>', self.on_key_up)
+
+        self._is_connected = False
+
         log.add("Application démarrée.")
+
+    def on_key_press(self, event):
+        if (time() - self._key_pressed[event.keysym]) > 0.1:
+            self._key_pressed[event.keysym] = time()
+            if self._is_connected:
+                self.send_key(event.keysym, KEYPRESS)
+                self.on_key_update()
+
+    def on_key_up(self, event):
+        if (time() - self._key_pressed[event.keysym]) > 0.1:
+            self._key_pressed.remove(event.keysym)
+            if self._is_connected:
+                self.send_key(event.keysym, KEYUP)
+                self.on_key_update()
+
+    def send_key(self, key, keyevent):
+        try:
+            self._socket.send((KEYMSG + keyevent + key + MSGSEP).encode('utf8'))
+        except BrokenPipeError:
+            print("Envoi touche impossible, le client n'est pas connecté au serveur.")
+
+    def on_key_update(self):
+        print(" | ".join([v for v in self._key_pressed]))
+
+    def on_connected(self):
+        self.initiate_talk()
+        self._is_connected = True
 
     def get_socket(self):
         return self._socket
 
     socket = property(get_socket)
-
-    def send_key(self, type_of_input, event):
-        print(event.keysym)
-        if type_of_input == KEY:
-            pass
-            # self._socket.send('k' + event.keysym)
 
     def initialize_ihm(self):
         """Initialise toute l'IHM."""
@@ -117,7 +145,8 @@ class Application(MyTkApp):
 
     def connect_to_server(self, address=sokt.gethostname(), port=88000):
         if self._connectionThread is None:
-            self._connectionThread = ConnectionThread(address, port, main_thread=self)
+            self._connectionThread = ConnectionThread(address, port, main_thread=self,
+                                                      on_connected_func=self.on_connected)
         self._connectionThread.start()
 
     def initiate_talk(self):
@@ -220,6 +249,7 @@ class IHM(MyFrame):
         configure_columns_rows(self, 3, 1, clmn_weights=[5, 9, 5])
 
         self.tv = tk.Canvas(master=self, bg=self.theme['backgroundColor'])
+
         self.buttons_frame = MyFrame(master=self, bg=self.theme['buttonsBackgroundColor'])
         self.buttons_group = MyFrame(master=self.buttons_frame, bg=self.theme['buttonsBackgroundColor'])
         self._userEntry_StrV = tk.StringVar()
@@ -322,13 +352,14 @@ class IHM(MyFrame):
 
 
 class ConnectionThread(Thread):
-    def __init__(self, target_address, target_port, main_thread):
+    def __init__(self, target_address, target_port, main_thread, on_connected_func):
         Thread.__init__(self, daemon=True)
 
         self._mainThread = main_thread
         self._socket = main_thread.socket
         self._targetAddress = target_address
         self._targetPort = target_port
+        self._onConnected_func = on_connected_func
 
         self.isRunning = False
 
@@ -342,7 +373,7 @@ class ConnectionThread(Thread):
                 self._socket.connect((self._targetAddress, self._targetPort))
                 log.add("Réussite.")
                 is_connected = True
-                self._mainThread.initiate_talk()
+                self._onConnected_func()
 
             except ConnectionRefusedError:
                 if self._mainThread.isRunning:
@@ -410,11 +441,12 @@ def run_app():
     app.connect_to_server(ADDRESS, PORT)
 
     app.mainloop()
+    sys.exit()
 
 
 def main():
     global log
-    log = Log("SuperClient", True, get_modules_path() + "/../logs/log_client.log", 10)
+    log = Log("SuperClient", True, get_modules_path() + "/../logs/log_client.log", 20, save=False)
     global eventLog
     eventLog = Log("SuperClientEvents", False, get_modules_path() + "/../logs/log_client_events.log", 25)
     eventLog.add("Lancement application...")

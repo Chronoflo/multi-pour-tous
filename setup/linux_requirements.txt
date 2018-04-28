@@ -2,3 +2,5 @@ PyOpenGL
 pillow
 Xlib
 pyautogui
+OrderedSet
+cyordereddict

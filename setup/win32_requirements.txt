@@ -2,4 +2,5 @@ PyOpenGL
 pillow
 pyautogui
 pywin32
-
+OrderedSet
+cyordereddict

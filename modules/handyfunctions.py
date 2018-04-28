@@ -8,7 +8,7 @@ from socket import gethostname
 from os import makedirs
 
 ADDRESS = gethostname()
-PORT = 3400
+PORT = 3500
 
 KEY = 0
 GAMEPAD = 1
@@ -174,7 +174,8 @@ class Log:
         for log in cls._created_logs:
             print("//FIN_LOG '{}'".format(log.name))
 
-    def __init__(self, tag: str, should_print: bool=True, file_path: str=None, n_entries_before_save: int=20):
+    def __init__(self, tag: str, should_print: bool=True, file_path: str=None, n_entries_before_save: int=20,
+                 save=True):
         """
         Crée un Log.
         :param tag: identifiant du log (doit être unique)
@@ -201,6 +202,7 @@ class Log:
         if self._filePath is not None:
             write_to_file(self._filePath, make_line('~'))
 
+        self._enable = save
         self._hasToRun: bool = True
         self.entriesOnMem: list = []
         self.nEntriesBeforeSave: int = n_entries_before_save
@@ -217,8 +219,9 @@ class Log:
             if self._shouldPrint:
                 print(line)
             self.entriesOnMem.append(line)
-            if len(self.entriesOnMem) >= self.nEntriesBeforeSave and self._filePath is not None:
-                self.save(lock_already_acquired=True)
+            if self._enable:
+                if len(self.entriesOnMem) >= self.nEntriesBeforeSave and self._filePath is not None:
+                    self.save(lock_already_acquired=True)
 
     def save(self, lock_already_acquired=False):
         """Sauvegarde toutes les entrées contenues dans entriesOnMem"""
@@ -464,16 +467,18 @@ def check_python_version():
 
 
 def safe_launch(func, log, event_log):
-    # noinspection PyBroadException
-    try:
-        func()
-    except Exception:
-        log.add(formatted_error(traceback.format_exc()))
-        Log.save_all()
-    finally:
-        event_log.add("Fin application.")
-        InfiniteTimer.kill_threads()
-        Log.final_save_all()
+    # noinspection PyBroadException TODO : faire un bon truc :p
+    # try:
+    #     func()
+    # except Exception as e:
+    #     print("Big error : "e)
+    #     log.add(formatted_error(traceback.format_exc()))
+    #     Log.save_all()
+    # finally:
+    #     event_log.add("Fin application.")
+    #     InfiniteTimer.kill_threads()
+    #     Log.final_save_all()
+    func()
 
 
 def main():
