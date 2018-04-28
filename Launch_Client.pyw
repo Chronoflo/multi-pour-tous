@@ -11,4 +11,3 @@ if __name__ == '__main__':
     Client.main()
 else:
     print("Launch_Client ne devrait pas être appelés depuis un autre module.")
-gezgez
