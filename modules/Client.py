@@ -16,7 +16,7 @@ try:
     import socket as sokt
     import traceback
 
-    from handyfunctions import *
+    from modules.handyfunctions import *
     from PIL import Image, ImageTk
     if sys.platform == 'windows':
         import win32gui
@@ -194,7 +194,8 @@ class IHM(MyFrame):
         self.theme = master.theme
         super().__init__(master=master, bg=self.theme['backgroundColor'])
         self.master = master
-        self.default_photo = ImageTk.PhotoImage(Image.open("pictures/forest.jpg"))
+        self.default_photo = ImageTk.PhotoImage(Image.open("{path}/../pictures/forest.jpg".format(
+            path=get_modules_path())))
         self.previous_nfps: int = 1
 
         configure_columns_rows(self, 3, 1, clmn_weights=[5, 9, 5])
@@ -393,9 +394,9 @@ def run_app():
 
 def main():
     global log
-    log = Log("SuperClient", True, "logs/log_client.log", 10)
+    log = Log("SuperClient", True, get_modules_path() + "/../logs/log_client.log", 10)
     global eventLog
-    eventLog = Log("SuperClientEvents", False, "logs/log_client_events.log", 25)
+    eventLog = Log("SuperClientEvents", False, get_modules_path() + "/../logs/log_client_events.log", 25)
     eventLog.add("Lancement application...")
     # Lance l'application.
     safe_launch(run_app, log, eventLog)

@@ -18,8 +18,8 @@ vérification et d'installation.
 import sys
 import subprocess
 from inspect import currentframe
-from handyfunctions import command, check_vars_types, check_python_version, get_folder_path
-from quickTk import warning, info, error
+from modules.handyfunctions import command, check_vars_types, check_python_version, get_modules_path
+from modules.quickTk import warning, info, error
 
 
 check_title = "Vérification "
@@ -131,8 +131,8 @@ def uninstall_requirements():
 def get_unsatisfied_reqs():
     """Retourne une liste des dépendances non satisfaites."""
     # Récupère les paquets nécessaires en fonction du système
-    with open('{path}/../setup/{reqs}.txt'.format(
-            path=get_folder_path(currentframe()),
+    with open('{path}/{reqs}.txt'.format(
+            path=get_modules_path() + "/../setup",
             reqs=sys.platform + '_requirements'), 'r') as f:
         reqs = reqs_to_list(f.read())
 

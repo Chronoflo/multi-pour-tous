@@ -1,9 +1,7 @@
 # -*- coding: <utf-8> -*-
 """Ce module permet de réaliser rapidement et simplement certaines opérations avec tkinter."""
 
-import easyimport
-
-tk = easyimport.tkinter()
+from modules.easyimport import tkinter as tk
 from tkinter import messagebox
 
 
@@ -12,7 +10,6 @@ def dialog(msg_box):
     disappear(tmp_root)
     tmp_root.geometry('0x0')
     center(tmp_root, harsh=True)
-
     msg_box()
     tmp_root.destroy()
 

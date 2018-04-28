@@ -1,12 +1,11 @@
 #!/usr/bin/python
 # -*- coding: <utf-8> -*-
 
-import easyimport
-
-tk = easyimport.tkinter()
+from modules.easyimport import tkinter as tk
 import traceback
 from datetime import datetime
 from threading import Timer, Lock
+from inspect import currentframe, getfile
 from socket import gethostname
 from os import makedirs
 
@@ -557,18 +556,34 @@ def is_slash(char: str):
         raise ValueError("char should be a single character.")
 
 
-def get_folder_path(obj):
+def get_folder_path(frame_obj):
     """ le chemin du dossier dans lequel se trouve un fichier."""
-    import inspect
-    if isinstance(obj, type(inspect.currentframe())):
-        full_path = inspect.getfile(obj)
-        for i, v in enumerate(full_path[::-1]):
-            if is_slash(v):
-                folder_path = full_path[:-i]
-                break
-        return folder_path
-    else:
-        raise TypeError("Type de l'objet non supporté.")
+    check_vars_types(frame_obj, 'frame_obj', type(currentframe()))
+
+    full_path = getfile(frame_obj)
+    folder_path = None
+    for i, v in enumerate(full_path[::-1]):
+        if is_slash(v):
+            folder_path = full_path[:-i - 1]
+            break
+    return folder_path
+
+
+def get_modules_path():
+    """Retourne le chemin absolu du dossier modules."""
+    # Récupère le chemin du dossier contenant handyfunctions.py
+    modules_path = get_folder_path(currentframe())
+
+    # Vérifie que le nom de ce dossier est bien module
+    folder_name = None
+    for i, v in enumerate(modules_path[::-1]):
+        if is_slash(v):
+            folder_name = modules_path[-i:]
+            break
+    if folder_name != 'modules' or folder_name is None:
+        raise Exception("Le dossier dans lequel se trouve handyfunctions.py n'est pas modules.")
+
+    return modules_path
 
 
 def check_path(path):
@@ -689,9 +704,9 @@ def _switch_theme(root, main_frame):
 
 
 def main():
-    from quickTk import make_invisible, center
+    from modules.quickTk import disappear, center
     root = MyTkApp(theme=Themes.dark)
-    make_invisible(root)
+    disappear(root)
     configure_columns_rows(root, 1, 1)
     _create_main_frame(root)
     center(root)

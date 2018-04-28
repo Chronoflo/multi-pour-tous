@@ -2,8 +2,8 @@
 # -*- coding: <utf-8> -*-
 """Ce fichier sert à lancer Client en mode fenêtré uniquement, et permet d'en générer du python compilé."""
 
-import Client
-from handyfunctions import check_python_version
+from modules import Client
+from modules.handyfunctions import check_python_version
 
 
 check_python_version()
