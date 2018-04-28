@@ -10,6 +10,8 @@
 # Copyright:   (c) Florian 2018
 # Licence:     <your licence>
 # -------------------------------------------------------------------------------
+from modules.myTk import *
+
 try:
     import sys
     import tkinter as tk

@@ -14,14 +14,12 @@ vérification et d'installation.
  • get_unsatisfied_reqs : renvoie les dépendances manquantes
  • reqs_to_list : convertit une string, qui suit la convention de pip, en une liste de dépendances
 """
-
 import sys
 from os import system
 import subprocess
 from modules.handyfunctions import to_command, check_vars_types, check_python_version, get_modules_path, get_python, \
     take_part, LEFT, BEFORE
-from modules.quickTk import warning, info, error
-from importlib.util import find_spec
+
 
 python = get_python()
 
@@ -39,24 +37,28 @@ install_end_msg = "Processus d'installation terminée. Normalement, tout devrait
 
 def ensure_pip():
     """S'assure que pip est installé."""
-    pip_found = find_spec("pip") is not None
-    if not pip_found:
+    try:
+        import pip
+    except ImportError:
         if sys.platform == 'linux':
-            warning("Installation", "Pip n'est pas installé et son installation va donc être lancée.")
+            print("Installation", "Pip n'est pas installé et son installation va donc être lancée.")
             system("sudo apt-get --yes --force-yes update && sudo apt-get --yes --force-yes install python3-pip")
         else:
             print("Je sais pas quoi faire :'( ")
+        import pip
 
 
 def ensure_tkinter():
     """S'assure que tkinter est installé."""
-    tkinter_found = find_spec("tkinter") is not None
-    if not tkinter_found:
+    try:
+        import tkinter
+    except ImportError:
         if sys.platform == 'linux':
-            warning("Installation", "Tkinter n'est pas installé et va donc maintenant l'être.")
+            print("Tkinter n'est pas installé et va donc maintenant l'être.")
             system("sudo apt-get --yes --force-yes install python3-tk")
         else:
-            error("C'est la hess", "JE SAIS PAS QUOI FAIRE")
+            print("C'est la hess, JE. SAIS. PAS. QUOI. FAIRE.")
+        import tkinter
 
 
 def pip_install(packages):
@@ -101,6 +103,9 @@ def install_requirements():
     """
     Installe toutes les dépendances requises en fonction de l'OS de l'utilisateur.
     """
+    ensure_pip()
+    ensure_tkinter()
+    from modules.quickTk import warning, info, error
     reqs_not_satisfied = get_unsatisfied_reqs()
     if reqs_not_satisfied:
         check_msg = "Certaines dépendances ne sont pas satisfaites :\n" + "\n".join(

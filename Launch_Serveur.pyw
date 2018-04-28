@@ -10,7 +10,6 @@
 # Copyright:   (c) Florian 2018
 # Licence:     <your licence>
 # -------------------------------------------------------------------------------
-# noinspection PyBroadException
 from modules import Serveur
 from modules.handyfunctions import check_python_version
 

@@ -11,9 +11,9 @@
 # Licence:     <your licence>
 # -------------------------------------------------------------------------------
 # TODO : toute la partie réseau est à refaire
-import sys
 
 try:
+    import sys
     import socket as sokt
     import traceback
 
@@ -25,11 +25,29 @@ try:
         import win32api
         from win32con import *
 
+    from modules.myTk import *
     from threading import Thread
     from select import select
-except Exception as e:
-    print(e)
-    input()
+except ImportError:
+    from modules.easydependencies import install_requirements
+    install_requirements()
+
+    import sys
+    import socket as sokt
+    import traceback
+
+    from modules.handyfunctions import *
+    from PIL import Image, ImageTk
+
+    if sys.platform == 'win32':
+        import win32gui
+        import win32api
+        from win32con import *
+
+    from modules.myTk import *
+    from threading import Thread
+    from select import select
+
 
 LEFT = 0
 TOP = 1
