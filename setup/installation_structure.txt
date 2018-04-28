@@ -12,3 +12,5 @@ modules/easyimport.py
 modules/handyfunctions.py
 modules/quickTk.py
 modules/Serveur.py
+Launch_Client.pyw
+Launch_Serveur.pyw
