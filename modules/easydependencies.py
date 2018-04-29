@@ -83,6 +83,17 @@ def pip_install(packages):
     pip_command("install " + packages + " --retries 1")
 
 
+def pip_upgrade(packages):
+    """Met à jour un/des paquets à l'aide de pip."""
+    if isinstance(packages, str):
+        packages = packages
+    elif isinstance(packages, list):
+        for package in packages:
+            check_vars_types((package, 'package', str))
+        packages = " ".join(packages)
+    pip_command("install --upgrade " + packages)
+
+
 def pip_uninstall(packages):
     """Enlève un/des paquets à l'aide de pip"""
     if isinstance(packages, str):
