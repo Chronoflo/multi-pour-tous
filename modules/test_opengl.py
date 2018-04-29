@@ -1,5 +1,3 @@
-import pygame
-from pygame.locals import *
 from threading import Thread
 from orderedset import OrderedSet
 from OpenGL.GL import *

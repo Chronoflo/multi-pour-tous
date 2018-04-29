@@ -411,15 +411,16 @@ def get_modules_path():
 
 
 def ensure_path(path):
-    """Vérifie que le chemin existe et crée les dossiers nécessaires le cas échéant."""
+    """Vérifie que le chemin existe et crée les dossiers nécessaires le cas échéant."""  # TODO : faire un truc bien
     check_vars_types(path, 'path', str)
+    os.makedirs(take_part(path, BEFORE, '/\\', start_from=RIGHT), exist_ok=True)
 
+    # if take_part(path, AFTER, '.', start_from=RIGHT, no_mods_chars='/\\') == path:
 # Récupère le chemin jusqu'au dernier slash
     # path_to_check = take_part(path, BEFORE, '/\\', start_from=RIGHT)
 
     # Crée les dossiers correspondants s'ils n'existent pas déjà.
     # if path_to_check is not None:
-    os.makedirs(path, exist_ok=True)
     # else:
     #    print("Il n'y avait pas de dossiers à vérifier.")
 
