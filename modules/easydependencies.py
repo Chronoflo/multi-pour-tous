@@ -19,7 +19,6 @@ import os
 import subprocess
 from modules.handyfunctions import to_command, check_vars_types, check_python_version, get_modules_path, get_python, \
     take_part, LEFT, BEFORE, os_adapt, get_current_arch
-from modules.quickTk import info
 
 python = get_python()
 
@@ -40,10 +39,12 @@ def ensure_pip():
     try:
         import pip
     except ImportError:
+        from modules.quickTk import info
         if sys.platform == 'linux':
             info("Installation", "pip n'est pas installé et va maintenant l'être.")
             print("Installation", "Pip n'est pas installé et son installation va donc être lancée.")
-            os.system("sudo apt-get --yes --allow-yes=true update && sudo apt-get --yes --force-yes install python3-pip")
+            os.system("sudo apt-get --yes --allow-yes=true update && sudo apt-get --yes --allow-yes=true install \
+            python3-pip")
         else:
             print("Je sais pas quoi faire :'( ")
         import pip
