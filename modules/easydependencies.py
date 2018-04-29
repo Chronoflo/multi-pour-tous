@@ -76,7 +76,7 @@ def ensure_glut():
 def setup_third_party():
     """Initialise toutes les bibliothèques additionnelles."""
     os.environ["PYSDL2_DLL_PATH"] = get_modules_path() + os_adapt("/../third_party/{system}/{arch}".format(
-        system=sys.platform,
+        system='all',
         arch=get_current_arch()
     ))
 

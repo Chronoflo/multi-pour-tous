@@ -13,6 +13,8 @@ except ImportError:
     import sdl2.ext
 
 pic_folder = get_modules_path() + '/../pictures/'
+LEFT = -1
+RIGHT = 1
 
 
 def create_sprite(pic_path, window):
@@ -91,6 +93,29 @@ class CollisionSystem(sdl2.ext.Applicator):
         if collitems:
             self.ball.velocity.vx = -self.ball.velocity.vx
 
+            sprite = collitems[0][1]
+            ballcentery = self.ball.sprite.y + self.ball.sprite.size[1] // 2
+            halfheight = sprite.size[1] // 2
+            stepsize = halfheight // 10
+            degrees = 0.7
+            paddlecentery = sprite.y + halfheight
+            if ballcentery < paddlecentery:
+                factor = (paddlecentery - ballcentery) // stepsize
+                self.ball.velocity.vy = -int(round(factor * degrees))
+            elif ballcentery > paddlecentery:
+                factor = (ballcentery - paddlecentery) // stepsize
+                self.ball.velocity.vy = int(round(factor * degrees))
+            else:
+                self.ball.velocity.vy = - self.ball.velocity.vy
+
+        if (self.ball.sprite.y <= self.miny or
+                self.ball.sprite.y + self.ball.sprite.size[1] >= self.maxy):
+            self.ball.velocity.vy = - self.ball.velocity.vy
+
+        if (self.ball.sprite.x <= self.minx or
+                self.ball.sprite.x + self.ball.sprite.size[0] >= self.maxx):
+            self.ball.velocity.vx = - self.ball.velocity.vx
+
 
 class Velocity(object):
     def __init__(self):
@@ -99,11 +124,52 @@ class Velocity(object):
         self.vy = 0
 
 
+class TrackingAIController(sdl2.ext.Applicator):
+    def __init__(self, miny, maxy):
+        super(TrackingAIController, self).__init__()
+        self.componenttypes = PlayerData, Velocity, sdl2.ext.Sprite
+        self.miny = miny
+        self.maxy = maxy
+        self.ball = None
+
+    def process(self, world, componentsets):
+        for pdata, vel, sprite in componentsets:
+            if not pdata.ai:
+                continue
+
+            centery = sprite.y + sprite.size[1] // 2
+            if pdata.side * self.ball.velocity.vx < 0:
+                # ball is moving away from the AI
+                if centery < self.maxy // 2:
+                    vel.vy = 3
+                elif centery > self.maxy // 2:
+                    vel.vy = -3
+                else:
+                    vel.vy = 0
+            else:
+                bcentery = self.ball.sprite.y + self.ball.sprite.size[1] // 2
+                if bcentery < centery:
+                    vel.vy = -3
+                elif bcentery > centery:
+                    vel.vy = 3
+                else:
+                    vel.vy = 0
+
+
+class PlayerData(object):
+    def __init__(self, side):
+        super(PlayerData, self).__init__()
+        self.ai = False
+        self.side = side
+
+
 class Player(sdl2.ext.Entity):
-    def __init__(self, world, sprite, posx=0, posy=0):
+    def __init__(self, world, sprite, posx=0, posy=0, ai=False, side=1):
         self.sprite = sprite
         self.sprite.position = posx, posy
         self.velocity = Velocity()
+        self.playerdata = PlayerData(side)
+        self.playerdata.ai = ai
 
 
 class Ball(sdl2.ext.Entity):
@@ -123,28 +189,29 @@ def run():
     movement = MovementSystem(0, 0, 800, 600)
     collision = CollisionSystem(0, 0, 800, 600)
     spriterenderer = SoftwareRenderer(window)
+    aicontroller = TrackingAIController(0, 600)
     world.add_system(movement)
     world.add_system(collision)
     world.add_system(spriterenderer)
+    world.add_system(aicontroller)
 
     factory = sdl2.ext.SpriteFactory(sdl2.ext.SOFTWARE)
     sp_paddle1 = factory.from_color(WHITE, size=(20, 100))
     sp_paddle2 = factory.from_color(WHITE, size=(20, 100))
     sp_ball = factory.from_color(WHITE, size=(20, 20))
 
-    player1 = Player(world, sp_paddle1, 0, 250)
-    player2 = Player(world, sp_paddle2, 780, 250)
+    player1 = Player(world, sp_paddle1, 0, 250, True, side=LEFT)
+    player2 = Player(world, sp_paddle2, 780, 250, True, RIGHT)
     ball = Ball(world, sp_ball, 390, 290)
     ball.velocity.vx = -10
 
     collision.ball = ball
+    aicontroller.ball = ball
 
     # create_sprite(pic_folder + 'smiley.bmp', window)
     i = 0
     running = True
     while running:
-        i += 0.4
-        ball.sprite.y += int(5 * cos(i))
         events = sdl2.ext.get_events()
         for event in events:
             if event.type == sdl2.SDL_QUIT:
@@ -152,9 +219,9 @@ def run():
                 break
             if event.type == sdl2.SDL_KEYDOWN:
                 if event.key.keysym.sym == sdl2.SDLK_UP:
-                    player1.velocity.vy = -3
+                    player1.velocity.vy = -15
                 elif event.key.keysym.sym == sdl2.SDLK_DOWN:
-                    player1.velocity.vy = 3
+                    player1.velocity.vy = 15
             elif event.type == sdl2.SDL_KEYUP:
                 if event.key.keysym.sym in (sdl2.SDLK_UP, sdl2.SDLK_DOWN):
                     player1.velocity.vy = 0
