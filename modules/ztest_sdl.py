@@ -11,7 +11,9 @@ except ImportError:
     handle_importerror()
 
     import sdl2.ext
+    from sdl2 import SDL_GetKeyboardState
 
 setup_third_party()
-print(SDL_GetKeyboardState())
+a = SDL_GetKeyboardState(None)
+print(a)
 
