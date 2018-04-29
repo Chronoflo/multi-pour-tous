@@ -15,11 +15,10 @@ vérification et d'installation.
  • reqs_to_list : convertit une string, qui suit la convention de pip, en une liste de dépendances
 """
 import sys
-from os import system
+import os
 import subprocess
 from modules.handyfunctions import to_command, check_vars_types, check_python_version, get_modules_path, get_python, \
-    take_part, LEFT, BEFORE
-
+    take_part, LEFT, BEFORE, os_adapt, get_current_arch
 
 python = get_python()
 
@@ -42,7 +41,7 @@ def ensure_pip():
     except ImportError:
         if sys.platform == 'linux':
             print("Installation", "Pip n'est pas installé et son installation va donc être lancée.")
-            system("sudo apt-get --yes --allow-yes=true update && sudo apt-get --yes --force-yes install python3-pip")
+            os.system("sudo apt-get --yes --allow-yes=true update && sudo apt-get --yes --force-yes install python3-pip")
         else:
             print("Je sais pas quoi faire :'( ")
         import pip
@@ -55,7 +54,7 @@ def ensure_tkinter():
     except ImportError:
         if sys.platform == 'linux':
             print("Tkinter n'est pas installé et va donc maintenant l'être.")
-            system("sudo apt-get --yes --allow-yes=true install python3-tk")
+            os.system("sudo apt-get --yes --allow-yes=true install python3-tk")
         else:
             print("C'est la hess, JE. SAIS. PAS. QUOI. FAIRE.")
         import tkinter
@@ -64,11 +63,19 @@ def ensure_tkinter():
 def ensure_glut():
     """S'assure que glut est installé."""
     if sys.platform == 'linux':
-        system("sudo apt-get --yes --allow-yes=true install freeglut3-dev")
+        os.system("sudo apt-get --yes --allow-yes=true install freeglut3-dev")
     elif sys.platform == 'win32':
         pass  # En théorie glut est installé par défaut sur windows avec pyopengl
     else:
         raise OSError("C'est la galère mec, je sais pas quoi faire sur cet OS")
+
+
+def setup_third_party():
+    """Initialise toutes les bibliothèques additionnelles."""
+    os.environ["PYSDL2_DLL_PATH"] = get_modules_path() + os_adapt("/../third_party/{system}/{arch}".format(
+        system=sys.platform,
+        arch=get_current_arch()
+    ))
 
 
 def pip_install(packages):
@@ -124,9 +131,12 @@ def install_requirements():
     """
     Installe toutes les dépendances requises en fonction de l'OS de l'utilisateur.
     """
+    check_python_version()
     ensure_pip()
     ensure_tkinter()
     ensure_glut()
+    setup_third_party()
+
     from modules.quickTk import warning, info, error
     reqs_not_satisfied = get_unsatisfied_reqs()
     if reqs_not_satisfied:
@@ -204,9 +214,5 @@ def reqs_to_list(reqs: str):
     return reqs
 
 
-check_python_version()
-ensure_pip()
-ensure_tkinter()
-ensure_glut()
 if __name__ == '__main__':
     install_requirements()

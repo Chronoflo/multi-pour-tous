@@ -5,7 +5,7 @@ from datetime import datetime
 from threading import Timer, Lock
 from inspect import currentframe, getfile
 from socket import gethostname
-from os import makedirs
+import os
 
 ADDRESS = gethostname()
 PORT = 3500
@@ -364,6 +364,28 @@ def get_python():
     return take_part(executable, BEFORE, '.', start_from=RIGHT, no_mods_chars='/\\')
 
 
+def get_current_arch():
+    """Renvoie l'architecture de l'interpréteur python. (Je crois) Retourne 64 ou 32."""
+    from struct import calcsize
+    arch = calcsize('P') * 8
+    if arch == 64 or arch == 32:
+        return arch
+    else:
+        raise ValueError('WTF, ton os tourne sur un grille-pain ou quoi ?')
+
+
+def os_adapt(path):
+    """Renvoie un chemin adapté en fonction de l'OS actuel."""
+    adapted_path = ''
+    for i, v in enumerate(path):
+        if v == '/':
+            adapted_path += os.sep
+        else:
+            adapted_path += v
+
+    return adapted_path
+
+
 def get_folder_path(frame_obj):
     """ le chemin du dossier dans lequel se trouve un fichier."""
     check_vars_types(frame_obj, 'frame_obj', type(currentframe()))
@@ -388,24 +410,24 @@ def get_modules_path():
     return folder_path
 
 
-def check_path(path):
+def ensure_path(path):
     """Vérifie que le chemin existe et crée les dossiers nécessaires le cas échéant."""
     check_vars_types(path, 'path', str)
 
-    # Récupère le chemin jusqu'au dernier slash
-    path_to_check = take_part(path, BEFORE, '/\\', start_from=RIGHT)
+# Récupère le chemin jusqu'au dernier slash
+    # path_to_check = take_part(path, BEFORE, '/\\', start_from=RIGHT)
 
     # Crée les dossiers correspondants s'ils n'existent pas déjà.
-    if path_to_check is not None:
-        makedirs(path_to_check, exist_ok=True)
-    else:
-        print("Il n'y avait pas de dossiers à vérifier.")
+    # if path_to_check is not None:
+    os.makedirs(path, exist_ok=True)
+    # else:
+    #    print("Il n'y avait pas de dossiers à vérifier.")
 
 
 def write_to_file(path, data):
     """Écrit data dans le fichier spécifié."""
     if path is not None:
-        check_path(path)
+        ensure_path(path)
         with open(path, 'a') as f:
             f.write(data)
         return True
