@@ -4,3 +4,4 @@ pyautogui
 pywin32
 OrderedSet
 cyordereddict
+PySDL2

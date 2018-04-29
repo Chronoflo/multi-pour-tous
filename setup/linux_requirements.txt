@@ -4,3 +4,5 @@ Xlib
 pyautogui
 OrderedSet
 cyordereddict
+PySDL2
+
