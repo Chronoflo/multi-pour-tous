@@ -129,6 +129,15 @@ def pip_command(cmd: str):
     )))
 
 
+def handle_importerror(e=None):
+    if e is not None:
+        print("Une erreur d'import est survenue :", e)
+    else:
+        print("Une erreur d'import est survenue.")
+    print("Une vérification des dépendances va maintenant être lancée.")
+    install_requirements()
+
+
 def install_requirements():
     """
     Installe toutes les dépendances requises en fonction de l'OS de l'utilisateur.
