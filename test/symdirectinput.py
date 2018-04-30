@@ -6,6 +6,7 @@
 import ctypes
 import time
 from sys import platform
+from modules.const import *
 
 SendInput = ctypes.windll.user32.SendInput
 
@@ -64,9 +65,11 @@ def ReleaseKey(hexKeyCode):
 
 
 if platform != 'win32':
-    raise OSError("PressKey et ReleaseKey ne marchent que sur Windows!")
+    raise OSError("PressKey et ReleaseKey ne marchent que sur Windows! (Je crois)")
 if __name__ == '__main__':
-    PressKey(0x11)
-    time.sleep(1)
-    ReleaseKey(0x11)
-    time.sleep(1)
+    for i in range(1):
+        k = [DIK_Z, DIK_A]
+        for j in k:
+            PressKey(j)
+            time.sleep(0)
+            ReleaseKey(j)
