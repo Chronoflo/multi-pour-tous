@@ -1,5 +1,4 @@
 from modules.handyfunctions import take_part, BEFORE, AFTER, LEFT, RIGHT
-from modules.const import *
 
 with open('dkey', 'r') as f:
     data = f.read()
@@ -17,6 +16,8 @@ print(keys)
 print(codes)
 print(len(keys) == len(codes))
 
-with open('../modules/const.py', 'a') as f:
-    for key, code in zip(keys, codes):
-        f.write(key + ' = ' + code + '\n')
+
+# Attention, voici le code qui écrit dans le fichier une fois les modifs effectuées
+# with open('../modules/const.py', 'a') as f:
+#     for key, code in zip(keys, codes):
+#         f.write(key + ' = ' + code + '\n')
