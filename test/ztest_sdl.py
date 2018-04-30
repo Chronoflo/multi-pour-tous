@@ -5,20 +5,19 @@ from time import sleep
 from orderedset import OrderedSet
 
 from modules.easydependencies import setup_third_party
-
+setup_third_party()
 try:
     import sdl2.ext
     from sdl2 import *
-except ImportError:
+except ImportError as e:
     from modules.easydependencies import handle_importerror
-    handle_importerror()
+    handle_importerror(e)
 
     import sdl2.ext
     from sdl2 import *
 
 kb_state = SDL_GetKeyboardState(None)
 pressed_key = OrderedSet()
-
 
 
 def check_kb(event):
