@@ -318,7 +318,7 @@ def is_slash(char: str):
         raise ValueError("char should be a single character.")
 
 
-def take_part(string: str, side: int, sep_chars: str, start_from: int, no_mods_chars: str = "", take_sep_char=False):
+def take_part(string: str, side: int, sep_chars: str, start_from: int, no_mods_chars: str = "", keep_sep=False):
     """
     Retourne une partie d'une chaîne de caractères à partir du premier séparateur trouvé. Si aucun n'est trouvé, cette
     chaîne de caractères est renvoyée telle quelle.
@@ -328,7 +328,7 @@ def take_part(string: str, side: int, sep_chars: str, start_from: int, no_mods_c
     :param sep_chars: Les caractères qui sont des séparateurs.
     :param start_from: Le côté du quel partir.
     :param no_mods_chars: Si un de ces caractères est trouvé en premier, string n'est pas modifié.
-    :param take_sep_char: Si la partie de string renvoyée doit inclure le séparateur trouvé.
+    :param keep_sep: Si la partie de string renvoyée doit inclure le séparateur trouvé.
     :return: Retourne string ou une partie de string.
     """
 
@@ -346,13 +346,13 @@ def take_part(string: str, side: int, sep_chars: str, start_from: int, no_mods_c
     for i, v in enumerate(string[::start_from]):
         if v in sep_chars:
             if side == AFTER and start_from == RIGHT:
-                return string[-i - take_sep_char:]
+                return string[-i - keep_sep:]
             elif side == BEFORE and start_from == RIGHT:
-                return string[: - i - 1 + take_sep_char]
+                return string[: - i - 1 + keep_sep]
             elif side == AFTER and start_from == LEFT:
-                return string[i + 1 - take_sep_char:]
+                return string[i + 1 - keep_sep:]
             elif side == BEFORE and start_from == LEFT:
-                return string[: i + take_sep_char]
+                return string[: i + keep_sep]
         if v in no_mods_chars:
             break
 
