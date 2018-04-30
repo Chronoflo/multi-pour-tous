@@ -10,7 +10,7 @@
 # Copyright:   (c) Florian 2018
 # Licence:     <your licence>
 # -------------------------------------------------------------------------------
-from modules.const import KEYMSG, KEYPRESS, KEYUP, MSGSEP
+from modules.const import KEYMSG, KEYPRESS, KEYUP, MSGSEP, win32_LEFT, win32_TOP, win32_RIGHT, win32_BOTTOM
 from modules.myTk import *
 
 try:
@@ -58,10 +58,6 @@ except ImportError as e:
         # noinspection PyUnresolvedReferences
         import win32gui
 
-LEFT = 0
-TOP = 1
-RIGHT = 2
-BOTTOM = 3
 entry_hint = "Identifiant fenêtre"
 
 
@@ -266,15 +262,15 @@ class Stream:
             # Copie le DC de la source vers le DC de destination en le redimensionnant
             win32gui.StretchBlt(
                 self.dest_window_dc,
-                0, 0, self.dest_rect_dc[RIGHT], self.dest_rect_dc[BOTTOM],
+                0, 0, self.dest_rect_dc[win32_RIGHT], self.dest_rect_dc[win32_BOTTOM],
                 self.src_window_dc,
-                0, 0, self.src_rect_dc[RIGHT], self.src_rect_dc[BOTTOM],
+                0, 0, self.src_rect_dc[win32_RIGHT], self.src_rect_dc[win32_BOTTOM],
                 win.SRCCOPY)
 
             source_bitmap = win32gui.CreateCompatibleBitmap(
                 self.dest_window_dc,
-                self.dest_rect_dc[RIGHT] - self.dest_rect_dc[LEFT],
-                self.dest_rect_dc[BOTTOM] - self.dest_rect_dc[TOP])
+                self.dest_rect_dc[win32_RIGHT] - self.dest_rect_dc[win32_LEFT],
+                self.dest_rect_dc[win32_BOTTOM] - self.dest_rect_dc[win32_TOP])
 
             if source_bitmap is None:
                 log.add("Échec création bitmap.")
@@ -383,15 +379,15 @@ class IHM(MyFrame):
                 # Copie le DC de la source vers le DC de destination en le redimensionnant
                 win32gui.StretchBlt(
                     target_window_dc,
-                    0, 0, dest_rect_dc[RIGHT], dest_rect_dc[BOTTOM],
+                    0, 0, dest_rect_dc[win32_RIGHT], dest_rect_dc[win32_BOTTOM],
                     source_window_dc,
                     0, 0, win32api.GetSystemMetrics(win.SM_CXSCREEN), win32api.GetSystemMetrics(win.SM_CYSCREEN),
                     win.SRCCOPY)
 
                 source_bitmap = win32gui.CreateCompatibleBitmap(
                     target_window_dc,
-                    dest_rect_dc[RIGHT] - dest_rect_dc[LEFT],
-                    dest_rect_dc[BOTTOM] - dest_rect_dc[TOP])
+                    dest_rect_dc[win32_RIGHT] - dest_rect_dc[win32_LEFT],
+                    dest_rect_dc[win32_BOTTOM] - dest_rect_dc[win32_TOP])
 
                 if source_bitmap is None:
                     log.add("Échec création bitmap.")

@@ -48,10 +48,6 @@ except ImportError:
         from win32con import *
 
 
-LEFT = 0
-TOP = 1
-RIGHT = 2
-BOTTOM = 3
 entry_hint = "Message"
 
 
@@ -301,15 +297,15 @@ class IHM(MyFrame):
                 # Copie le DC de la source vers le DC de destination en le redimensionnant
                 win32gui.StretchBlt(
                     target_window_dc,
-                    0, 0, dest_rect_dc[RIGHT], dest_rect_dc[BOTTOM],
+                    0, 0, dest_rect_dc[win32_RIGHT], dest_rect_dc[win32_BOTTOM],
                     source_window_dc,
                     0, 0, win32api.GetSystemMetrics(SM_CXSCREEN), win32api.GetSystemMetrics(SM_CYSCREEN),
                     SRCCOPY)
 
                 source_bitmap = win32gui.CreateCompatibleBitmap(
                     target_window_dc,
-                    dest_rect_dc[RIGHT] - dest_rect_dc[LEFT],
-                    dest_rect_dc[BOTTOM] - dest_rect_dc[TOP])
+                    dest_rect_dc[win32_RIGHT] - dest_rect_dc[win32_LEFT],
+                    dest_rect_dc[win32_BOTTOM] - dest_rect_dc[win32_TOP])
 
                 if source_bitmap is None:
                     log.add("Échec création bitmap.")
