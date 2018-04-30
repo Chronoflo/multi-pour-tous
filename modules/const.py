@@ -1,10 +1,17 @@
+# Networking
 KEYPRESS = 'P'
 KEYUP = 'U'
 KEYMSG = 'K'
 TEXTMSG = 'M'
 MSGSEP = "\r"
 
+# Aide à utiliser win32
+win32_LEFT = 0
+win32_TOP = 1
+win32_RIGHT = 2
+win32_BOTTOM = 3
 
+# ScanCodes DirectInput pour le clavier
 DIK_ESCAPE = 0x01
 DIK_1 = 0x02
 DIK_2 = 0x03
@@ -90,11 +97,9 @@ DIK_NUMPAD0 = 0x52
 DIK_DECIMAL = 0x53
 DIK_F11 = 0x57
 DIK_F12 = 0x58
-
 DIK_F13 = 0x64
 DIK_F14 = 0x65
 DIK_F15 = 0x66
-
 DIK_KANA = 0x70
 DIK_CONVERT = 0x79
 DIK_NOCONVERT = 0x7B
