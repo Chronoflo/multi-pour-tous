@@ -73,6 +73,24 @@ def ensure_glut():
         raise OSError("C'est la galère mec, je sais pas quoi faire sur cet OS")
 
 
+def ensure_ffmpeg():
+    try:
+        subprocess.run(["ffmpeg"])  # TODO ne pas print l'output
+    except FileNotFoundError:
+        if sys.platform == 'linux':
+            print("FFMpeg n'est pas installé et va donc maintenant l'être.")
+            subprocess.check_call(to_command("sudo apt-get install ffmpeg"), stdout=None)
+        else:
+            raise OSError("AH, JE SAIS PAS QUOI FAIRE, C'EST QUOI CET OS DE ***** !!")
+        try:
+            print("Vérification...")
+            subprocess.run("ffmpeg", stdout=None)
+            print("O.K.")
+            print("ffmpeg est maintenant installé.")
+        except FileNotFoundError:
+            raise AssertionError("L'installation de ffmpeg a échoué.")
+
+
 def setup_third_party():
     """Initialise toutes les bibliothèques additionnelles."""
     os.environ["PYSDL2_DLL_PATH"] = get_modules_path() + os_adapt("/../third_party/{system}/{arch}".format(
@@ -146,7 +164,8 @@ def install_requirements():
     ensure_tkinter()
     check_python_version()
     ensure_pip()
-    ensure_glut()
+    ensure_ffmpeg()
+    # ensure_glut()
     setup_third_party()
 
     from modules.quickTk import warning, info, error
