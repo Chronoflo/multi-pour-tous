@@ -160,6 +160,7 @@ class PlayerData(object):
     def __init__(self, side):
         super(PlayerData, self).__init__()
         self.ai = False
+        self.speed = 15
         self.side = side
 
 
@@ -200,8 +201,8 @@ def run():
     sp_paddle2 = factory.from_color(WHITE, size=(20, 100))
     sp_ball = factory.from_color(WHITE, size=(20, 20))
 
-    player1 = Player(world, sp_paddle1, 0, 250, True, side=LEFT)
-    player2 = Player(world, sp_paddle2, 780, 250, True, RIGHT)
+    player1 = Player(world, sp_paddle1, 0, 250, side=LEFT)
+    player2 = Player(world, sp_paddle2, 780, 250, side=RIGHT)
     ball = Ball(world, sp_ball, 390, 290)
     ball.velocity.vx = -10
 
@@ -209,6 +210,9 @@ def run():
     aicontroller.ball = ball
 
     # create_sprite(pic_folder + 'smiley.bmp', window)
+    players_speed = 12
+    player1.playerdata.speed = players_speed
+    player2.playerdata.speed = players_speed
     i = 0
     running = True
     while running:
@@ -219,12 +223,18 @@ def run():
                 break
             if event.type == sdl2.SDL_KEYDOWN:
                 if event.key.keysym.sym == sdl2.SDLK_UP:
-                    player1.velocity.vy = -15
+                    player2.velocity.vy = -player2.playerdata.speed
+                elif event.key.keysym.sym == sdl2.SDLK_z:
+                    player1.velocity.vy = -player1.playerdata.speed
                 elif event.key.keysym.sym == sdl2.SDLK_DOWN:
-                    player1.velocity.vy = 15
+                    player2.velocity.vy = player2.playerdata.speed
+                elif event.key.keysym.sym == sdl2.SDLK_s:
+                    player1.velocity.vy = player1.playerdata.speed
             elif event.type == sdl2.SDL_KEYUP:
-                if event.key.keysym.sym in (sdl2.SDLK_UP, sdl2.SDLK_DOWN):
+                if event.key.keysym.sym in (sdl2.SDLK_z, sdl2.SDLK_s):
                     player1.velocity.vy = 0
+                elif event.key.keysym.sym in (sdl2.SDLK_UP, sdl2.SDLK_DOWN):
+                    player2.velocity.vy = 0
         sdl2.SDL_Delay(10)
         world.process()
         window.refresh()

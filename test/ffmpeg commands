@@ -1,0 +1,11 @@
+# Ici on peut trouver des commandes miracles que j'ai galéré à trouver
+
+# Stream udp
+ffmpeg -f gdigrab -i title="The Pong Game" -f mpegts udp://127.0.0.1:8888
+
+
+# Récup udp en plusieurs images jpeg
+ffmpeg -re -f mpegts -i udp://127.0.0.1:8888 -vf fps=1 thumb%04d.jpg
+
+# Récup udp en plusieurs images jpeg toutes les 1 secondes
+ffmpeg -re -f mpegts -i udp://127.0.0.1:8888 -vf fps=1 thumb%04d.jpg
