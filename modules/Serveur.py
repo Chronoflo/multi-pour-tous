@@ -10,13 +10,16 @@
 # Copyright:   (c) Florian 2018
 # Licence:     <your licence>
 # -------------------------------------------------------------------------------
+from time import sleep
+
 from modules.const import KEYMSG, KEYPRESS, KEYUP, MSGSEP, win32_LEFT, win32_TOP, win32_RIGHT, win32_BOTTOM
-from modules.myTk import *
+import subprocess
 
 try:
     import sys
     import tkinter as tk
     from tkinter import messagebox
+    from modules.myTk import *
     from threading import Thread
     from datetime import datetime
     from modules.handyfunctions import *
@@ -38,6 +41,7 @@ except ImportError as e:
     import sys
     import os
     from tkinter import messagebox
+    from modules.myTk import *
     from modules import quickTk
     from threading import Thread
     from datetime import datetime
@@ -163,7 +167,7 @@ class SuperThread(Thread):
         self._hasToRun = False
 
 
-class Stream:
+class Win32Stream:
     """Un stream est un objet qui capture la partie de l'écran qui a été spécifiée et la rediffuse vers le widget
     spécifié."""
 
@@ -332,7 +336,7 @@ class IHM(MyFrame):
         configure_columns_rows(self, 3, 1, clmn_weights=[5, 9, 5])
 
         self.tv = tk.Canvas(master=self, bg=self.theme['backgroundColor'])
-        self._stream = Stream(self.tv)
+        self._stream = Stream()
         # self._timerStream = InfiniteTimer(0.5, self._stream.run)
         self.buttons_frame = MyFrame(master=self, bg=self.theme['buttonsBackgroundColor'])
         self.buttons_group = MyFrame(master=self.buttons_frame, bg=self.theme['buttonsBackgroundColor'])
@@ -420,8 +424,8 @@ class IHM(MyFrame):
         MyButton(self.buttons_group, text="Find Window 2", command=lambda handle=0x00010100: find_window(handle)).grid(
             column=mid_clmn + 1, row=g.same(), sticky='ew')
         MyButton(self.buttons_group, text="Launch Stream",
-                 command=lambda user_entry=self._userEntry, nfps=self._spinbox_fps: self._stream.launch(
-                     src_hdl=user_entry.get(), fps=nfps.get())).grid(column=mid_clmn - 1, row=g.next(), sticky='ew')
+                 command=lambda user_entry=self._userEntry, nfps=self._spinbox_fps: self._stream.start(
+                     src_name=user_entry.get(), fps=nfps.get())).grid(column=mid_clmn - 1, row=g.next(), sticky='ew')
         MyButton(self.buttons_group, text="Refresh Stream",
                  command=lambda user_entry=self._userEntry, nfps=self._spinbox_fps: self._stream.refresh(
                      src_hdl=user_entry.get(),
@@ -593,6 +597,58 @@ class RecvData(Thread):
                 self._master.disconnect()
 
         log.add("RecvDataThread de " + self._master.name + " terminée.")
+
+
+class Stream:
+    def __init__(self, src_name='The Pong Game', address='127.0.0.1', port='8888', fps=None):
+        check_vars_types(
+            (src_name, 'window_name', str),
+            (address, 'address', str),
+            (port, 'port', str),
+            (fps, 'fps', int, True)
+        )
+        self._subprocess: subprocess.Popen = None
+        self._src_name: str = src_name
+        self._address: str = address
+        self._port: str = port
+        self._fps: int = fps
+
+    def start(self):
+        if self._subprocess is None:
+            self._subprocess = subprocess.Popen(
+                to_command('ffmpeg -f gdigrab -i title="{wndwName}" -f mpegts udp://{address}:{port}'.format(
+                    wndwName=self._src_name,
+                    address=self._address,
+                    port=self._port
+                )),
+                stdin=subprocess.PIPE,
+                encoding='utf8'
+            )
+        else:
+            print("Stream déjà lancé.")
+
+    def stop(self):
+        if self._subprocess is not None:
+            self._subprocess.communicate('q')
+            self._subprocess.wait(5)
+            self._subprocess = None
+        else:
+            print("Aucun stream n'est en cours.")
+
+    def update(self, src_name=None, address=None, port=None, fps=None):
+        check_vars_types(
+            (src_name, 'window_name', str),
+            (address, 'address', str),
+            (port, 'port', str),
+            (fps, 'fps', int, True)
+        )
+        inputs = [src_name, address, port, fps]
+        attributes = [self._src_name, self._address, self._port, self._fps]
+        need_update = False
+        for v1, i2, v2 in zip(inputs, range(len(attributes)), attributes):
+            if v1 is not None and v1 != v2:
+                need_update = True
+                attributes[i2] = v1
 
 
 def run_app():
