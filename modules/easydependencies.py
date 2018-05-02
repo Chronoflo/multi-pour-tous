@@ -213,8 +213,9 @@ def get_unsatisfied_reqs():
 def reqs_to_list(reqs: str):
     """Enlève tout ce qui est inutile pour obtenir une liste contenant les noms des modules en minuscules."""
     check_vars_types((reqs, 'reqs', str))
-    # Fait une liste en séparant à l'aide de \n, et en enlevant les espaces, les \n, et les éléments vides
-    reqs = [i for i in reqs.split("\n") if i not in "\n " and len(i) != 0]
+    # Fait une liste en séparant à l'aide de \n, en enlevant les espaces, les \n, les éléments vides,
+    # et les lignes commençant par dièse.
+    reqs = [i for i in reqs.split("\n") if i not in "\n " and len(i) != 0 and i[0] != '#']
 
     # Parcourt les différentes dépendances
     for i, req in enumerate(reqs):
