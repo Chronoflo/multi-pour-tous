@@ -457,7 +457,28 @@ def configure_columns_rows(tk_obj, n_columns: int, n_rows: int, clmn_weights: li
 
 def to_command(cmd: str):
     """Retourne une commande écrite comme une phrase sous la forme d'une liste. (ex : sert pour subprocess)"""
-    return [i for i in cmd.split(" ") if i != " "]
+    to_return = []
+    tmp = ""
+    is_in_quotes = False  # TODO : commentaires pour expliquer le schmilblick
+    for i in cmd:
+        if not is_in_quotes:
+            if i == ' ':
+                if tmp:
+                    to_return.append(tmp)
+                    tmp = ""
+            else:
+                tmp += i
+                if i == '"':
+                    is_in_quotes = True
+        else:
+            tmp += i
+            if i == '"':
+                is_in_quotes = False
+    if tmp:
+        to_return.append(tmp)
+    if is_in_quotes:
+        raise ValueError("Not closing quotes")
+    return to_return
 
 
 # noinspection PyUnusedLocal
