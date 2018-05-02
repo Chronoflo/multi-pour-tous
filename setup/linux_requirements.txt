@@ -1,8 +1,8 @@
-PyOpenGL
+# PyOpenGL
 pillow
-Xlib
-pyautogui
+# Xlib
+# pyautogui
 OrderedSet
-cyordereddict
+# cyordereddict
 PySDL2
 
