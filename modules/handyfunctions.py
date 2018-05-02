@@ -467,13 +467,15 @@ def to_command(cmd: str):
                     to_return.append(tmp)
                     tmp = ""
             else:
-                tmp += i
                 if i == '"':
                     is_in_quotes = True
+                else:
+                    tmp += i
         else:
-            tmp += i
             if i == '"':
                 is_in_quotes = False
+            else:
+                tmp += i
     if tmp:
         to_return.append(tmp)
     if is_in_quotes:
