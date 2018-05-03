@@ -118,7 +118,6 @@ class MyApplication(MyTkApp):
             self.theme = Themes.allBlue
         elif self.theme is Themes.allBlue:
             self.theme = Themes.dark
-
         self.mainFrame = IHM(master=self)
         self.mainFrame.grid(sticky='nesw')
         log.add("Changement terminé. Thème: " + self.theme['id'])
@@ -206,7 +205,7 @@ class Win32Stream:
             if src_hdl is None:
                 src_hdl = self._src_hdl
             log.add("Début stream.")
-            self.refresh(src_hdl, fps)
+            self.update(src_hdl, fps)
             self._hasToRun = True
             # self.run()
             self.timer.start()
@@ -223,7 +222,7 @@ class Win32Stream:
             """TODO : Lalie..."""
             pass
 
-    def refresh(self, src_hdl, fps):
+    def update(self, src_hdl, fps):
         """Met à jour les paramètres du stream."""
         if sys.platform == 'win32':
             if isinstance(src_hdl, str):
@@ -340,17 +339,17 @@ class IHM(MyFrame):
         # self._timerStream = InfiniteTimer(0.5, self._stream.run)
         self.buttons_frame = MyFrame(master=self, bg=self.theme['buttonsBackgroundColor'])
         self.buttons_group = MyFrame(master=self.buttons_frame, bg=self.theme['buttonsBackgroundColor'])
-        self._userEntry = HintedUserEntry(master=self.buttons_group, hint=entry_hint, onreturn_func=self.refresh_stream)
-        self._spinbox_fps = CheckedSpinBox(self.buttons_group, 1, 999, hint='fps', onupdate_func=self.refresh_stream)
+        self._userEntry = HintedUserEntry(master=self.buttons_group, hint=entry_hint, onreturn_func=self.update_stream)
+        self._spinbox_fps = CheckedSpinBox(self.buttons_group, 1, 999, hint='fps', onupdate_func=self.update_stream)
 
         self.place_and_create_widgets()
 
-    def refresh_stream(self, key_event=None):
+    def update_stream(self, key_event=None):
         """Rafraîchit les paramètres du stream."""
         if key_event is not None:
             log.add(key_event)
         try:
-            self._stream.refresh(src_hdl=self._userEntry.get(), fps=self._spinbox_fps.get())
+            self._stream.update(src_name=self._userEntry.get(), fps=self._spinbox_fps.get())
         except AttributeError:
             pass
 
@@ -427,8 +426,8 @@ class IHM(MyFrame):
                  command=lambda user_entry=self._userEntry, nfps=self._spinbox_fps: self._stream.start(
                      src_name=user_entry.get(), fps=nfps.get())).grid(column=mid_clmn - 1, row=g.next(), sticky='ew')
         MyButton(self.buttons_group, text="Refresh Stream",
-                 command=lambda user_entry=self._userEntry, nfps=self._spinbox_fps: self._stream.refresh(
-                     src_hdl=user_entry.get(),
+                 command=lambda user_entry=self._userEntry, nfps=self._spinbox_fps: self._stream.update(
+                     src_name=user_entry.get(),
                      fps=nfps.get())
                  ).grid(column=mid_clmn, row=g.same(), sticky='ew')
         MyButton(self.buttons_group, text="Stop Stream", command=self._stream.stop).grid(column=mid_clmn + 1,
@@ -613,7 +612,7 @@ class Stream:
         self._port: str = port
         self._fps: int = fps
 
-    def start(self):
+    def start(self, *args, **kwargs):
         if self._subprocess is None:
             self._subprocess = subprocess.Popen(
                 to_command('ffmpeg -f gdigrab -i title="{wndwName}" -f mpegts udp://{address}:{port}'.format(
@@ -627,7 +626,7 @@ class Stream:
         else:
             print("Stream déjà lancé.")
 
-    def stop(self):
+    def stop(self, *args, **kwargs):  # TODO : faire autre chose que de la merde
         if self._subprocess is not None:
             self._subprocess.communicate('q')
             self._subprocess.wait(5)

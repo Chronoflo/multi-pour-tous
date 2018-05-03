@@ -209,13 +209,13 @@ def run():
     collision.ball = ball
     aicontroller.ball = ball
 
-    # create_sprite(pic_folder + 'smiley.bmp', window)
     players_speed = 12
     player1.playerdata.speed = players_speed
     player2.playerdata.speed = players_speed
     i = 0
     running = True
     while running:
+        create_sprite(pic_folder + 'smiley.bmp', window)
         events = sdl2.ext.get_events()
         for event in events:
             if event.type == sdl2.SDL_QUIT:

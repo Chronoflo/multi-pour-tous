@@ -16,6 +16,13 @@ except ImportError as e:
     import sdl2.ext
     from sdl2 import *
 
+
+def update_spriterenderer(factory, spriterenderer):
+    sprite = factory.from_image(pic_path)
+    spriterenderer.render(sprite)
+    return sprite
+
+
 kb_state = SDL_GetKeyboardState(None)
 pressed_key = OrderedSet()
 
@@ -34,7 +41,10 @@ def check_kb(event):
 
 def run():
     sdl2.ext.init()
+    factory = sdl2.ext.SpriteFactory(sdl2.ext.SOFTWARE)
     window = sdl2.ext.Window("The Pong Game", size=(800, 600))
+    spriterenderer = factory.create_sprite_render_system(window)
+    update_spriterenderer(factory, spriterenderer)
     window.show()
     setup_third_party()
     running = True

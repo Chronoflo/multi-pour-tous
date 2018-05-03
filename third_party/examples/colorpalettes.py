@@ -138,10 +138,10 @@ def run():
                 # ignore anything else.
                 break
 
-        # Once the events were properly handled, we will refresh the window,
+        # Once the events were properly handled, we will update the window,
         # since it might have happened that the user moved the window around,
         # pressed a button or did something else. In all those cases, we want
-        # the palettes to be shown, so we need to refresh the window. This will
+        # the palettes to be shown, so we need to update the window. This will
         # cause the  window internally to copy its surface information (those
         # we used to draw the palette on) to the screen, where the window
         # currently is  placed on.

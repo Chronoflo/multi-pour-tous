@@ -3,7 +3,6 @@ from orderedset import OrderedSet
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-import tkinter as tk
 
 
 class GlutSpyInputs(Thread):
