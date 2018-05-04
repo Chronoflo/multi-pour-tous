@@ -617,7 +617,7 @@ class Stream:
             audio = ''
         elif sys.platform == 'linux':
             w, h = quickTk.get_screensize()
-            options = '-video_size {}x{}'.format(w, h)
+            options = '-thread_queue_size 128 -video_size {}x{}'.format(w, h)
             video = '-f x11grab -i :0.0'
             audio = '-f pulse -ac 2 -i default'
         else:
