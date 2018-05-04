@@ -611,10 +611,24 @@ class Stream:
         self._fps: int = fps
 
     def start(self, *args, **kwargs):
+        if sys.platform == 'win32':
+            options = ''
+            video = '-f gdigrab -i title="{wndwName}"'.format(wndwName=self._src_name)
+            audio = ''
+        elif sys.platform == 'linux':
+            w, h = quickTk.get_screensize()
+            options = '-video_size {}x{}'.format(w, h)
+            video = '-f x11grab -i :0.0'
+            audio = '-f pulse -ac 2 -i default'
+        else:
+            raise OSError("HA, JE SUIS PERDU")
+
         if self._subprocess is None:
             self._subprocess = subprocess.Popen(
-                to_command('ffmpeg -f gdigrab -i title="{wndwName}" -f mpegts udp://{address}:{port}'.format(
-                    wndwName=self._src_name,
+                to_command('ffmpeg  {options} {video} {audio} -f mpegts udp://{address}:{port}'.format(
+                    options=options,
+                    video=video,
+                    audio=audio,
                     address=self._address,
                     port=self._port
                 )),
