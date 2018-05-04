@@ -12,5 +12,5 @@ ffmpeg -re -f mpegts -i udp://127.0.0.1:8888 -vf fps=1 thumb%04d.jpg
 
 
 
-# Pour linux TODO : à améliorer.   ...hm, en faite à changer quasiment complétement...
+# Pour linux TODO : à améliorer.   ...hm, en faite à changer quasiment complétement...b
 ffmpeg -video_size 1440x900 -framerate 60 -f x11grab -i :0.0 -f pulse -ac 2 -i default output.mkv
