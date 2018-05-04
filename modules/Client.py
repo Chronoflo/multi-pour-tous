@@ -338,8 +338,8 @@ class IHM(MyFrame):
             column=mid_clmn + 1, row=g.same(), sticky='ew')
         MyButton(self.buttons_group, text="Receive Stream", command=self._streamRcvr.start).grid(
             column=mid_clmn - 1, row=g.next(), sticky='ew')
-        MyButton(self.buttons_group, text="Update Stream", command=self._streamRcvr.stop).grid(column=mid_clmn, row=g.same(), sticky='ew')
-        MyButton(self.buttons_group, text="Stop Stream").grid(column=mid_clmn + 1,
+        MyButton(self.buttons_group, text="Update Stream").grid(column=mid_clmn, row=g.same(), sticky='ew')
+        MyButton(self.buttons_group, text="Stop Stream", command=self._streamRcvr.stop).grid(column=mid_clmn + 1,
                                                               row=g.same(),
                                                               sticky='ew')
         MyButton(self.buttons_group, text="Quit", command=self.master.terminate).grid(column=mid_clmn, row=g.next(),
@@ -415,8 +415,7 @@ class StreamRecvr:
     def stop(self, *args, **kwargs):
         if self._subprocess is not None:
             self._subprocess.communicate('q')
-            # self._subprocess.wait(5)
-            self._subprocess.kill()
+            self._subprocess.wait(5)
             self._subprocess = None
         else:
             print("Ce StreamRcvr n'est déjà pas actif.")
