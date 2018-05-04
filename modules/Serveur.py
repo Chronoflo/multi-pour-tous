@@ -14,7 +14,6 @@ from time import sleep
 
 from modules.const import KEYMSG, KEYPRESS, KEYUP, MSGSEP, win32_LEFT, win32_TOP, win32_RIGHT, win32_BOTTOM
 import subprocess
-
 try:
     import sys
     import tkinter as tk
@@ -28,14 +27,14 @@ try:
     from select import select
     import os
     import traceback
-    import pyautogui
     from PIL import Image, ImageTk
     if sys.platform == 'win32':
         import win32con as win
         import win32api
         import win32gui
 except ImportError as e:
-    from modules.easydependencies import install_requirements
+    from modules.easydependencies import install_requirements, pip_install
+
     install_requirements()
 
     import sys
@@ -51,7 +50,6 @@ except ImportError as e:
     from select import select
     import tkinter as tk
     import traceback
-    import pyautogui
     # noinspection PyUnresolvedReferences
     from PIL import Image, ImageTk
     if sys.platform == 'win32':
