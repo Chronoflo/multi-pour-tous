@@ -62,6 +62,13 @@ def center(win, rel_x=0, rel_y=0, harsh=False):
     win.deiconify()
 
 
+def get_screensize():
+    """Retourne un tuple contenant la largeur et la hauteur de l'écran"""
+    root = tk.Tk()
+    return root.winfo_screenwidth(), root.winfo_screenheight()
+
+
 if __name__ == '__main__':
     warning("lol", "lol")
     info("meh", "meh")
+    print(get_screensize())
