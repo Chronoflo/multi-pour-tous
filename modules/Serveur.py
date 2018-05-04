@@ -12,7 +12,8 @@
 # -------------------------------------------------------------------------------
 from time import sleep
 
-from modules.const import KEYMSG, KEYPRESS, KEYUP, MSGSEP, win32_LEFT, win32_TOP, win32_RIGHT, win32_BOTTOM
+from modules.const import KEYMSG, KEYPRESS, KEYUP, MSGSEP, win32_LEFT, win32_TOP, win32_RIGHT, win32_BOTTOM, \
+    stream_addr, stream_port
 import subprocess
 try:
     import sys
@@ -88,9 +89,9 @@ class MyApplication(MyTkApp):
         self.mainFrame: MyFrame = None
         self.theme: dict = self.theme  # self.theme est un attribut  hérité
 
-        def print_key(event):
-            print(event.keysym)
-        self.bind('<Key>', print_key)
+        # def print_key(event):
+        #     print(event.keysym)
+        # self.bind('<Key>', print_key)
         log.add("Application démarrée.")
 
     def initialize_ihm(self):
@@ -597,7 +598,7 @@ class RecvData(Thread):
 
 
 class Stream:
-    def __init__(self, src_name='The Pong Game', address='127.0.0.1', port='8888', fps=None):
+    def __init__(self, src_name='The Pong Game', address=stream_addr, port=stream_port, fps=None):
         check_vars_types(
             (src_name, 'window_name', str),
             (address, 'address', str),
