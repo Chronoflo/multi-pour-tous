@@ -11,7 +11,7 @@
 # Licence:     <your licence>
 # -------------------------------------------------------------------------------
 # TODO : toute la partie réseau est à refaire
-
+import subprocess
 import sys
 import traceback
 from threading import Thread
@@ -19,13 +19,13 @@ import socket as sokt
 from select import select
 from time import time
 
+from modules import quickTk
 from modules.const import *
 
 try:
     from modules.myTk import *
     from modules.handyfunctions import *
     from PIL import Image, ImageTk
-    from cyordereddict import OrderedDict
     from orderedset import OrderedSet
 
     if sys.platform == 'win32':
@@ -39,7 +39,6 @@ except ImportError:
     from modules.myTk import *
     from modules.handyfunctions import *
     from PIL import Image, ImageTk
-    from cyordereddict import OrderedDict
     from orderedset import OrderedSet
 
     if sys.platform == 'win32':
@@ -69,12 +68,12 @@ class Application(MyTkApp):
         self.recvDataThread = RecvDataThread(main_thread=self)
         self.sendDataThread = SendDataThread(main_thread=self)
 
-        self._key_pressed = OrderedDict()
-        import string
-        for letter in string.ascii_lowercase:
-            self._key_pressed[letter] = 0
-        self.bind('<Key>', self.on_key_press)
-        self.bind('<KeyRelease>', self.on_key_up)
+        # self._key_pressed = {}
+        # import string
+        # for letter in string.ascii_lowercase:
+        #     self._key_pressed[letter] = 0
+        # self.bind('<Key>', self.on_key_press)
+        # self.bind('<KeyRelease>', self.on_key_up)
 
         self._is_connected = False
 
@@ -242,6 +241,7 @@ class IHM(MyFrame):
         self.default_photo = ImageTk.PhotoImage(Image.open("{path}/../pictures/forest.jpg".format(
             path=get_modules_path())))
         self.previous_nfps: int = 1
+        self._streamRcvr = StreamRecvr()
 
         configure_columns_rows(self, 3, 1, clmn_weights=[5, 9, 5])
 
@@ -336,8 +336,9 @@ class IHM(MyFrame):
         self._spinbox_fps.grid(column=mid_clmn, row=g.same(), sticky='ew')
         MyButton(self.buttons_group, text="Find Window 2", command=lambda handle=0x00010100: find_window(handle)).grid(
             column=mid_clmn + 1, row=g.same(), sticky='ew')
-        MyButton(self.buttons_group, text="Launch Stream").grid(column=mid_clmn - 1, row=g.next(), sticky='ew')
-        MyButton(self.buttons_group, text="Refresh Stream").grid(column=mid_clmn, row=g.same(), sticky='ew')
+        MyButton(self.buttons_group, text="Receive Stream", command=self._streamRcvr.start).grid(
+            column=mid_clmn - 1, row=g.next(), sticky='ew')
+        MyButton(self.buttons_group, text="Update Stream", command=self._streamRcvr.stop).grid(column=mid_clmn, row=g.same(), sticky='ew')
         MyButton(self.buttons_group, text="Stop Stream").grid(column=mid_clmn + 1,
                                                               row=g.same(),
                                                               sticky='ew')
@@ -380,6 +381,45 @@ surchargé ou non connecté.")
         log.add("ConnectionThread terminée.")
 
         self.isRunning = False
+
+
+class StreamRecvr:
+    def __init__(self, address: str=stream_addr, port: str=stream_port):
+        check_vars_types(
+            (address, 'address', str),
+            (port, 'port', str)
+        )
+        self._address: str = address
+        self._port: str = port
+        self._subprocess: subprocess.Popen = None
+
+    def start(self, *args, **kwargs):
+        options = ''
+        video = ''
+        audio = ''
+        if self._subprocess is None:
+            self._subprocess = subprocess.Popen(
+                to_command('ffmpeg  -re {options} -f mpegts -i udp://{address}:{port} -vf fps=1 thumb%04d.jpg'.format(
+                    options=options,
+                    video=video,
+                    audio=audio,
+                    address=self._address,
+                    port=self._port
+                )),
+                stdin=subprocess.PIPE,
+                encoding='utf8'
+            )
+        else:
+            print("StreamRecvr déjà lancé.")
+
+    def stop(self, *args, **kwargs):
+        if self._subprocess is not None:
+            self._subprocess.communicate('q')
+            # self._subprocess.wait(5)
+            self._subprocess.kill()
+            self._subprocess = None
+        else:
+            print("Ce StreamRcvr n'est déjà pas actif.")
 
 
 class RecvDataThread(Thread):
@@ -434,9 +474,10 @@ class SendDataThread(Thread):
 
 def run_app():
     app = Application()
+    quickTk.disappear(app)
     app.initialize_ihm()
+    quickTk.center(app)
     app.connect_to_server(ADDRESS, PORT)
-
     app.mainloop()
     sys.exit()
 
