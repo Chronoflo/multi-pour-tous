@@ -1,5 +1,4 @@
 *.log
 *.idea/
 __pycache__/
-venv/
 pictures/recvdFrames/
