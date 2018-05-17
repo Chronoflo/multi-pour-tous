@@ -410,6 +410,11 @@ def get_modules_path():
     return folder_path
 
 
+def get_frames_folder():
+    """Retourne le chemin absolu du dossier recvdFrames"""
+    return get_modules_path() + os_adapt("/../pictures/recvdFrames")
+
+
 def ensure_path(path):
     """Vérifie que le chemin existe et crée les dossiers nécessaires le cas échéant."""  # TODO : faire un truc bien
     check_vars_types(path, 'path', str)

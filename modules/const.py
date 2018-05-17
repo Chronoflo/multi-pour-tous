@@ -1,6 +1,7 @@
 # Defaults
 stream_addr = "127.0.0.1"
 stream_port = "9999"
+stream_fps = 60
 
 # Networking
 KEYPRESS = 'P'

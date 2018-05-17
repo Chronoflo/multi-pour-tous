@@ -5,4 +5,5 @@ pillow
 OrderedSet
 # cyordereddict
 PySDL2
+ffmpeg-python
 
