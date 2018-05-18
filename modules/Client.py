@@ -26,7 +26,6 @@ try:
     from modules.myTk import *
     from modules.handyfunctions import *
     from PIL import Image, ImageTk
-    from orderedset import OrderedSet
 
     if sys.platform == 'win32':
         import win32gui
@@ -39,7 +38,6 @@ except ImportError:
     from modules.myTk import *
     from modules.handyfunctions import *
     from PIL import Image, ImageTk
-    from orderedset import OrderedSet
 
     if sys.platform == 'win32':
         import win32gui

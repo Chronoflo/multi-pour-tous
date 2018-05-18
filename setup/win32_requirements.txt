@@ -2,6 +2,6 @@
 pillow
 #pyautogui
 pywin32
-OrderedSet
+#OrderedSet
 #cyordereddict
 PySDL2

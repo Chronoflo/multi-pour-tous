@@ -9,7 +9,6 @@ try:
 except ImportError:
     from modules.easydependencies import ensure_tkinter
     ensure_tkinter()
-
     import tkinter as tk
 
 
@@ -51,13 +50,33 @@ class MyWidgets:
         if theme is not None:
             self.theme = theme
         else:
-            self.theme = master.theme
+            try:
+                self.theme = master.theme
+            except AttributeError:
+                pass
         if theme_keys is not None:
             if isinstance(theme_keys, dict):
                 for k, v in theme_keys.items():
                     tk_attributes[k] = self.theme[v]
             else:
                 raise TypeError("theme_keys should be dict. Current : " + str(type(theme_keys)))
+
+
+class MyLabelFrame(MyWidgets, tk.LabelFrame):
+    """Hérite de tk.Frame afin d'en faire un widget plus intelligent qui hérite son thème de son maître, si
+    aucun autre n'est spécifié."""
+    def __init__(self, master, theme_keys: dict=None, theme=None, **tk_attributes):
+        """
+        Crée un objet frame.
+        :param master: doit être un objet tkinter
+        :param theme_keys: sert à spécifier des propriétés définies dans un thème
+        :param theme: à remplir si le thème ne doit pas être hérité du maître
+        :param tk_attributes: sert à accepter tous les paramètres tk usuels
+        """
+        MyWidgets.__init__(self, master, theme_keys, theme, tk_attributes)  # complète tk_attributes
+        tk.LabelFrame.__init__(self, master=master, cnf=tk_attributes)
+
+
 
 
 class Fields(MyWidgets):
