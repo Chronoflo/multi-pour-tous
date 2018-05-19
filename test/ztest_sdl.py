@@ -1,10 +1,12 @@
 #!usr/bin/python3.6
 # -*- coding: <utf-8> -*-
-from time import sleep
+from time import sleep, time
 
 from orderedset import OrderedSet
 
 from modules.easydependencies import setup_third_party
+from modules.handyfunctions import get_frames_folder, os_adapt, get_modules_path
+
 setup_third_party()
 try:
     import sdl2.ext
@@ -16,11 +18,19 @@ except ImportError as e:
     import sdl2.ext
     from sdl2 import *
 
+pic_path = get_frames_folder()
+i_f = 1
 
-def update_spriterenderer(factory, spriterenderer):
-    sprite = factory.from_image(pic_path)
-    spriterenderer.render(sprite)
-    return sprite
+def get_sprite(factory):
+    global i_f
+    f = factory
+    number = str(i_f)
+    i_f += 1
+    tmp = ""
+    for i in range(4 - len(number)):
+        tmp += '0'
+    number = tmp + number
+    return f.from_image(os_adapt(pic_path + "/thumb" + number + '.bmp'))
 
 
 kb_state = SDL_GetKeyboardState(None)
@@ -39,16 +49,30 @@ def check_kb(event):
         to_print.append("shift pressed")
 
 
+last = time()
+delay = 1 / 60
+
+
+def update_sprite(spriterenderer, factory):
+    global last
+    global delay
+    current = time()
+    if current - last >= delay:
+        spriterenderer.render(get_sprite(factory))
+        last = current
+
+
 def run():
     sdl2.ext.init()
     factory = sdl2.ext.SpriteFactory(sdl2.ext.SOFTWARE)
-    window = sdl2.ext.Window("The Pong Game", size=(800, 600))
+    window = sdl2.ext.Window("CLIENT", size=(800, 600))
     spriterenderer = factory.create_sprite_render_system(window)
-    update_spriterenderer(factory, spriterenderer)
+    spriterenderer.render(factory.from_image(get_modules_path() + os_adapt("/../pictures/smiley.bmp")))
     window.show()
     setup_third_party()
     running = True
     while running:
+        # update_sprite(spriterenderer, factory)
         events = sdl2.ext.get_events()
         for event in events:
             if event.type == sdl2.SDL_QUIT:

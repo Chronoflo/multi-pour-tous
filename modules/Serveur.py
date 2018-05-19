@@ -13,7 +13,7 @@
 from time import sleep
 
 from modules.const import KEYMSG, KEYPRESS, KEYUP, MSGSEP, win32_LEFT, win32_TOP, win32_RIGHT, win32_BOTTOM, \
-    stream_addr, stream_port
+    stream_addr, stream_port, stream_fps
 import subprocess
 try:
     import sys
@@ -598,7 +598,7 @@ class RecvData(Thread):
 
 
 class Stream:
-    def __init__(self, src_name='The Pong Game', address=stream_addr, port=stream_port, fps=None):
+    def __init__(self, src_name='The Pong Game', address=stream_addr, port=stream_port, fps=stream_fps):
         check_vars_types(
             (src_name, 'window_name', str),
             (address, 'address', str),
@@ -612,27 +612,31 @@ class Stream:
         self._fps: int = fps
 
     def start(self, *args, **kwargs):
+        g_options = ''
+        outputs = ""
         if sys.platform == 'win32':
             options = ''
-            video = '-f gdigrab -i title="{wndwName}"'.format(wndwName=self._src_name)
+            video = '-f gdigrab -framerate {fps} -i title="{wndwName}"'.format(fps=self._fps, wndwName=self._src_name)
             audio = ''
         elif sys.platform == 'linux':
             w, h = quickTk.get_screensize()
-            options = '-thread_queue_size 128 -video_size {}x{}'.format(w, h)
+            options = '-thread_queue_size 128 -video_size {}x{} -framerate {}'.format(w, h, self._fps)
             video = '-f x11grab -i :0.0'
             audio = '-f pulse -ac 2 -i default'
         else:
             raise OSError("HA, JE SUIS PERDU")
 
         if self._subprocess is None:
+            ffmpeg_cmd = to_command('ffmpeg  {options} {video} {audio} -f mpegts udp://{address}:{port}'.format(
+                options=g_options + options,
+                video=video,
+                audio=audio,
+                address=self._address,
+                port=self._port
+            ))
+            print(ffmpeg_cmd)
             self._subprocess = subprocess.Popen(
-                to_command('ffmpeg  {options} {video} {audio} -f mpegts udp://{address}:{port}'.format(
-                    options=options,
-                    video=video,
-                    audio=audio,
-                    address=self._address,
-                    port=self._port
-                )),
+                ffmpeg_cmd,
                 stdin=subprocess.PIPE,
                 encoding='utf8'
             )

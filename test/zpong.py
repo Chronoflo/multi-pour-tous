@@ -215,7 +215,7 @@ def run():
     i = 0
     running = True
     while running:
-        create_sprite(pic_folder + 'smiley.bmp', window)
+        # create_sprite(pic_folder + 'smiley.bmp', window)
         events = sdl2.ext.get_events()
         for event in events:
             if event.type == sdl2.SDL_QUIT:

@@ -395,26 +395,31 @@ class StreamRecvr:
         options = ''
         video = ''
         audio = ''
+        out_options = '-vf fps=1'
         if self._subprocess is None:
             self._subprocess = subprocess.Popen(
-                to_command('ffmpeg  -re {options} -f mpegts -i udp://{address}:{port} -vf fps=1 thumb%04d.jpg'.format(
-                    options=options,
-                    video=video,
-                    audio=audio,
-                    address=self._address,
-                    port=self._port
-                )),
+                to_command(
+                    'ffmpeg  -re {options} -f mpegts -i udp://{address}:{port} {path}/thumb%04d.bmp'.format(
+                        options=options,
+                        video=video,
+                        audio=audio,
+                        address=self._address,
+                        port=self._port,
+                        path=get_modules_path() + os_adapt("/../pictures/recvdFrames")
+                    )),
                 stdin=subprocess.PIPE,
                 encoding='utf8'
             )
+            print("Début StreamRcvr.")
         else:
             print("StreamRecvr déjà lancé.")
 
     def stop(self, *args, **kwargs):
         if self._subprocess is not None:
             self._subprocess.communicate('q')
-            self._subprocess.wait(5)
+            self._subprocess.kill()
             self._subprocess = None
+            print("Fin StreamRcvr.")
         else:
             print("Ce StreamRcvr n'est déjà pas actif.")
 
@@ -474,7 +479,7 @@ def run_app():
     quickTk.disappear(app)
     app.initialize_ihm()
     quickTk.center(app)
-    app.connect_to_server(ADDRESS, PORT)
+    # app.connect_to_server(ADDRESS, PORT)
     app.mainloop()
     sys.exit()
 
