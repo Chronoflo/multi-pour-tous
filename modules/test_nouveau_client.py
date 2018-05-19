@@ -1,15 +1,40 @@
 from modules.myTk import *
 import socket
+import threading
 
-# Interface de creation d'utilisateur #
+
+# Variables #
+recv = ""
+
+
+# Threads de connexion # TODO: thread de reception des données + thread d'envoi de données
+class Recv_TCP:
+    def __init__(self, HOST, PORT, csocket):
+        threading.Thread.__init__(self)
+        self.ip = HOST
+        self.port = PORT
+        self.csocket = csocket
+    def run(self):
+        global recv
+        recv = self.csocket.recv(2048)
+
+
+# Interface de connexion #
 class Fenetre_Connexion(MyFrame):
-    def __init__(self, **kwargs):
+    def __init__(self, fenetre, **kwargs):
         MyFrame.__init__(self, fenetre, **kwargs)
-        self.pack(fill='both', expand="yes")
+        self.pack(fill='both', expand=1)
 
-        # Creation du cadre principal #
-        self.fenetre_connexion = MyLabelFrame(self, text=" Connexion ", labelanchor="nw", padx=20, pady=20, **kwargs)
-        self.fenetre_connexion.pack(fill='both', expand="yes")
+        # Creation du cadre du logo #
+        self.logo = tk.PhotoImage(file="logo.png")
+        self.logo = self.logo.subsample(2)
+        self.cadre_logo = tk.Canvas(self)
+        self.cadre_logo.create_image(225, 0, image=self.logo, anchor="n")
+        self.cadre_logo.pack(fill="both", expand=1, side="top")
+
+        # Creation du cadre de connexion #
+        self.fenetre_connexion = MyLabelFrame(self, text=" Connexion ", labelanchor="nw", **kwargs)
+        self.fenetre_connexion.place(x=0, y=282, width=450, height=150)
 
         # Creation de la zone de texte "Adresse du serveur" #
         self.texte_adresse_serveur = tk.Label(self.fenetre_connexion, text="Adresse IP du serveur : ")
@@ -39,7 +64,7 @@ class Fenetre_Connexion(MyFrame):
         self.bouton_connexion = MyButton(self.fenetre_connexion, text="Connexion", command= lambda: self.connexion(self.HOST.get(), self.PORT.get()))
         self.bouton_connexion.pack()
 
-    def connexion(self, HOST, PORT):
+    def connexion(self, HOST, PORT): # TODO: Connection TCP
         print(HOST + "\n")
         print(PORT)
 
@@ -47,14 +72,34 @@ class Fenetre_Connexion(MyFrame):
         self.warning_port_serveur.pack_forget()
 
         if HOST != "" and PORT != "":
-            try:
-                HOST = str(HOST)
-            except ValueError:
+            adresse_valide = True
+            port_valide = True
+
+            HOST = str(HOST)
+            HOSTbis = HOST.split(".")
+
+            if len(HOSTbis) == 4: # Une adresse valide possede 4 chaines separes de points
+                for element in HOSTbis: # Chaque chaine doit etre un nombre
+                    try:
+                        int(element)
+                    except ValueError:
+                        adresse_valide = False
+
+            else:
+                adresse_valide = False
+
+            if adresse_valide == False:
                 self.warning_adresse_serveur.pack()
+
             try:
                 PORT = int(PORT)
             except ValueError:
                 self.warning_port_serveur.pack()
+                port_valide = False
+
+            print(adresse_valide, port_valide)
+            print(HOST, PORT)
+
         else:
             pass
 
@@ -64,10 +109,22 @@ class Fenetre_Connexion(MyFrame):
 #        except TimeoutError:
 #            pass
 
+# TODO: Ecran de choix de programme + Champ d'envoie de commande
+# TODO: Ecran de retour Streaming en UDP
 
 
-fenetre = MyTkApp()
-fenetre.title("Client v0.1a")
 
-interface = Fenetre_Connexion()
-interface.mainloop()
+
+
+
+def ecran_connexion():
+    fenetre = MyTkApp()
+    fenetre.title("Client")
+    fenetre.resizable(width=False, height=False)
+    fenetre.geometry('{}x{}'.format(450, 432))
+
+    interface = Fenetre_Connexion(fenetre)
+    interface.mainloop()
+
+
+ecran_connexion()
