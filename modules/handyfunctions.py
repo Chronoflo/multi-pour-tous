@@ -107,6 +107,18 @@ class HandyIndexGenerator:
         return self._index + 1
 
 
+class LaunchOnThread(Thread):
+    def __init__(self, func, name=None, daemon=True):
+        self._func = func
+        if name is not None:
+            super().__init__(name=name, daemon=daemon)
+        else:
+            super().__init__(name=name, daemon=daemon)
+
+    def run(self):
+        self._func()
+
+
 class InfiniteTimer:
     """A Timer class that does not stop, unless you want it to. Celle-là je l'ai copiée."""
     createdThreads = []
