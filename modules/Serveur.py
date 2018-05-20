@@ -658,7 +658,8 @@ class GameStream:
             self._subprocess = subprocess.Popen(
                 ffmpeg_cmd,
                 stdin=subprocess.PIPE,
-                encoding='utf8'
+                encoding='utf8',
+                shell=True
             )
         else:
             print("Stream déjà lancé.")

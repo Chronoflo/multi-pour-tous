@@ -419,7 +419,7 @@ class StreamRecvr:
 
     def run(self):
         # TODO Super Adresse
-        self._stream.recv_and_disp(self._address, self._port, self._soft_name, self._on_kbupdt, enable_display=False)
+        self._stream.recv_and_disp(self._address, self._port, self._soft_name, self._on_kbupdt, enable_display=True)
 
     def stop(self, *args, **kwargs):
         self._stream.stop()

@@ -1,9 +1,4 @@
 """Un module qui contient toutes les constantes utilisées par multi-pour-tous."""
-from modules.easydependencies import setup_third_party
-
-setup_third_party()
-from sdl2 import *
-
 # Defaults
 stream_addr = "127.0.0.1"
 stream_port = "9999"

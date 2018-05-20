@@ -92,7 +92,7 @@ class Stream:
                  to_command(
                      'ffmpeg -re -f mpegts -i udp://{}:{} -f sdl2 "{}"'.format(
                         address, port, soft_name
-                     )), stdin=subprocess.PIPE)
+                     )), stdin=subprocess.PIPE, shell=True)
         setup_third_party()
         sdl2.ext.init()
 
