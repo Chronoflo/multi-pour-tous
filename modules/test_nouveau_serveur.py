@@ -1,3 +1,4 @@
+from modules.myTk import *
 import socket
 import threading
 
@@ -23,11 +24,11 @@ class Fenetre_Config(MyFrame):
         self.pack(fill='both', expand=1)
 
         # Creation du cadre de selection
-        self.fenetre_selection = MyLabelFrame(self, text=" Programmes enregistrés", labelanchor="nw", **kwargs)
+        self.fenetre_selection = MyLabelFrame(self, text=" Programmes enregistrés", labelanchor="nw", width=50, **kwargs)
         self.fenetre_selection.pack(fill='both', expand=1)
 
         # Creation de la liste des programmes #
-        self.liste_prgm = tk.Listbox(self.fenetre_selection, height=15)
+        self.liste_prgm = tk.Listbox(self.fenetre_selection, height=10)
         programmes = ['programme 1', 'programme 2', 'programme 3', 'programme 4', 'programme 5', 'programme 6', 'programme 7']
         for element in programmes:
             self.liste_prgm.insert(tk.END, element)
@@ -39,31 +40,48 @@ class Fenetre_Config(MyFrame):
         self.liste_prgm.pack(fill='both', padx=5, pady=10)
         scrollbar.config(command=self.liste_prgm.yview)
 
-        # Creation du cadre de commande #
-        self.fenetre_controle = MyLabelFrame(self, text=" Console ", labelanchor="nw", **kwargs)
-        self.fenetre_controle.pack(fill='both', expand=1)
+        # Creation du cadre d'ajout #
+        self.fenetre_ajout = MyLabelFrame(self, text=" Ajout ", labelanchor="nw", **kwargs)
+        self.fenetre_ajout.pack(fill='both', expand=1)
 
-        # Creation de la zone d'ecriture des commandes #
-        self.commande = tk.StringVar()
-        self.commande = tk.Entry(self.fenetre_controle, textvariable=self.commande, width=30)
-        self.commande.grid(column=0, row=0, padx=5, pady=5)
+        # Creation de la zone d'ecriture du chemin du programme a ajouter #
+        self.nouveau_programme = tk.StringVar()
+        self.nouveau_programme = tk.Entry(self.fenetre_ajout, textvariable=self.nouveau_programme, width=30)
+        self.nouveau_programme.grid(column=0, row=0, padx=5, pady=5)
 
-        # Creation du bouton d'envoi #
-        self.bouton_envoi = MyButton(self.fenetre_controle, text="Envoyer", command= lambda: self.envoi_tcp(self.commande.get()))
-        self.bouton_envoi.grid(column=1, row=0, padx=5, pady=5)
+        # Creation du bouton d'ajout #
+        self.bouton_ajout = MyButton(self.fenetre_ajout, text="Ajouter", command= lambda: self.verification_ajout(self.nouveau_programme.get()))
+        self.bouton_ajout.grid(column=1, row=0, padx=5, pady=5)
 
-        # Creation de la zone d'affichage des reponses serveur (console) #
-        self.console = tk.Listbox(self.fenetre_controle, height=3, width=40, bg='#2d2d2d', fg='#e8e8e8')
-        self.console.insert(tk.END, afficher_info("Bienvenue dans la console"))
+        # Creation du bouton de validation #
+        self.bouton_valider = MyButton(self.fenetre_ajout, text="Ok", command= lambda: self.demarrage())
+        self.bouton_valider.grid(column=0, row=1, columnspan=99, padx=5, pady=5)
 
-        # Creation de la scrollbar verticale de la console #
-        scrollbar_console = tk.Scrollbar(self.fenetre_controle, orient='vertical')
-        scrollbar_console.grid(column=3, row=1, sticky='e')
-        scrollbar_console.config(command=self.console.yview)
-        self.console.grid(row=1, columnspan=2, padx=5, pady=10, sticky='w')
-        self.console.config(yscrollcommand=scrollbar_console.set)
+    def verification_ajout(self, path):
+        self.path = path
+        chemin_valide = False
+        if self.path != "":
+            try:
+                with open(self.path):
+                    chemin_valide = True
+            except IOError:
+                chemin_valide = False
+        if chemin_valide is True:
+            self.liste_prgm.insert(tk.END, self.path)
 
 
+# Affichage de la fenetre de selection des programmes #
+def ecran_selection():
+    fenetre_selection = MyTkApp()
+    fenetre_selection.title("Selection")
+    fenetre_selection.resizable(width=False, height=False)
+
+    interface_selection = Fenetre_Config(fenetre_selection)
+    interface_selection.mainloop()
+
+
+### CODE PUR ###
+ecran_selection()
 
 tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 tcp.settimeout(None)
@@ -75,5 +93,4 @@ while True:
     recvThread = Recv(ip, port, client)
     recvThread.start()
 
-client.close()
 tcp.close()

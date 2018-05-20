@@ -259,7 +259,7 @@ class Fenetre_Controle(MyFrame):
 # TODO: Continuer Threads
 
 
-### PARTIE CODE PUR ###
+### CODE PUR ###
 
 ecran_connexion()
 
