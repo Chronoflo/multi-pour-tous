@@ -24,7 +24,6 @@ try:
     from modules.myTk import *
     from modules.handyfunctions import *
     from PIL import Image, ImageTk
-    from orderedset import OrderedSet
     from modules.recv_and_display import Stream
 
     if sys.platform == 'win32':
@@ -38,7 +37,6 @@ except ImportError:
     from modules.myTk import *
     from modules.handyfunctions import *
     from PIL import Image, ImageTk
-    from orderedset import OrderedSet
     from modules.recv_and_display import Stream
 
     if sys.platform == 'win32':
@@ -67,13 +65,6 @@ class Application(MyTkApp):
         self._connectionThread: ConnectionThread = None
         self.recvDataThread = RecvDataThread(main_thread=self)
         self.sendDataThread = SendDataThread(main_thread=self)
-
-        # self._key_pressed = {}
-        # import string
-        # for letter in string.ascii_lowercase:
-        #     self._key_pressed[letter] = 0
-        # self.bind('<Key>', self.on_key_press)
-        # self.bind('<KeyRelease>', self.on_key_up)
 
         self._is_connected = False
 
