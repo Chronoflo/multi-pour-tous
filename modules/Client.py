@@ -370,6 +370,7 @@ class ConnectionThread(Thread):
             try:
                 self._socket.connect((self._targetAddress, self._targetPort))
                 log.add("Réussite.")
+                print("Réussite de la connection.")
                 is_connected = True
                 self._onConnected_func()
 
