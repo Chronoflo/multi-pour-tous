@@ -7,6 +7,9 @@ import time
 send = ""
 recv = ""
 
+tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+connected = False
+
 ip = ""
 port = ""
 
@@ -15,21 +18,80 @@ ssocket = ""
 stop_recv_tcp = False
 stop_send_tcp = False
 
-# Thread de reception TCP #
-class Recv_TCP():
-    def __init__(self, ssocket):
-        threading.Thread.__init__(self)
-        self.ssocket = ssocket
+### FONCTIONS ###
+def syntaxe_console():
+    a = str(time.localtime())
+    a = a.replace("time.struct_time(","")
+    a = a.replace(")","")
+    a = a.replace(",","")
+    a = a.replace("tm_year=","")
+    a = a.replace("tm_mon=","")
+    a = a.replace("tm_mday=","")
+    a = a.replace("tm_hour=","")
+    a = a.replace("tm_min=","")
+    a = a.replace("tm_sec=","")
+    a = a.replace("tm_wday=","")
+    a = a.replace("tm_yday=","")
+    a = a.replace("tm_isdst=","")
 
-    def run(self):
-        while not stop_recv_tcp == True:
-            global recv
-            recv = self.ssocket.recv(2048)
-            time.sleep(.3)
+    a = a.split()
+
+    hour = a[3]
+    if len(hour) == 1:
+        hour = "0" + hour
+    min = a[4]
+    if len(min) == 1:
+        min = "0" + min
+    sec = a[5]
+    if len(sec) == 1:
+        sec = "0" + sec
+
+    return(hour + ":" + min + ":" + sec + " | ")
+
+
+def afficher_recv(recv):
+    return(syntaxe_console() + ">> " + recv)
+
+def afficher_send(send):
+    return(syntaxe_console() + "> " + send)
+
+def afficher_info(info):
+    return(syntaxe_console() + "[ " + info + " ]")
+
+# Affichage des fenetres #
+def ecran_connexion():
+    fenetre_connexion = MyTkApp()
+    fenetre_connexion.title("Client")
+    fenetre_connexion.resizable(width=False, height=False)
+    fenetre_connexion.geometry('{}x{}'.format(450, 432))
+
+    interface_connexion = Fenetre_Connexion(fenetre_connexion)
+    interface_connexion.mainloop()
+
+def ecran_attente_serveur():
+    fenetre_attente_serveur = MyTkApp()
+    fenetre_attente_serveur.title("Attente du serveur...")
+    fenetre_attente_serveur.resizable(width=False, height=False)
+    fenetre_attente_serveur.geometry('{}x{}'.format(200, 65))
+
+    interface_attente_serveur = Fenetre_attente_serveur(fenetre_attente_serveur)
+    interface_attente_serveur.mainloop()
+
+def ecran_controle():
+    fenetre_controle = MyTkApp()
+    fenetre_controle.title("Multi Pour Tous")
+    fenetre_controle.resizable(width=False, height=False)
+
+    interface_controle = Fenetre_Controle(fenetre_controle)
+    interface_controle.mainloop()
+
+
+### Threads ###
 
 
 
-# Interface de connexion #
+
+### Interface de connexion ###
 class Fenetre_Connexion(MyFrame):
     def __init__(self, fenetre, **kwargs):
         MyFrame.__init__(self, fenetre, **kwargs)
@@ -53,6 +115,7 @@ class Fenetre_Connexion(MyFrame):
         # Creation de la zone d'ecriture de l'adresse du serveur #
         self.HOST = tk.StringVar()
         self.HOST = tk.Entry(self.fenetre_connexion, textvariable=self.HOST, width=15)
+        self.HOST.insert(0, '127.0.0.1')
         self.HOST.pack()
 
         # Creation du Warning "Adresse du serveur" #
@@ -65,6 +128,7 @@ class Fenetre_Connexion(MyFrame):
         # Creation de la zone d'ecriture du port du serveur #
         self.PORT = tk.StringVar()
         self.PORT = tk.Entry(self.fenetre_connexion, textvariable=self.PORT, width=6)
+        self.PORT.insert(0, '15555')
         self.PORT.pack()
 
         # Creation du Warning "Port du serveur" #
@@ -109,11 +173,19 @@ class Fenetre_Connexion(MyFrame):
 
                 global port
                 port = PORT
-
-        time.sleep(.2)
+        print(HOST, PORT)
         ecran_attente_serveur()
 
-# Interface d'attente du serveur #
+        # Tentative de connexion #
+        global tcp
+#        connexion = ThreadConnexion(ip, port, tcp)
+#        connexion.start()
+#        connexion.join()
+#        print("fin thread", connected)
+        tcp.connect((ip, port))
+        tcp.send("hello")
+
+### Interface d'attente du serveur ###
 class Fenetre_attente_serveur(MyFrame):
     def __init__(self, fenetre, **kwargs):
         MyFrame.__init__(self, fenetre, **kwargs)
@@ -127,30 +199,8 @@ class Fenetre_attente_serveur(MyFrame):
         self.texte_attente_serveur = tk.Label(self.fenetre_connexion, text="En attente du serveur... ")
         self.texte_attente_serveur.pack()
 
-        # Creation du bouton d'annulation #
-        self.bouton_annuler = MyButton(self.fenetre_connexion, text="Annuler", command= lambda: self.annulation())
-        self.bouton_annuler.pack()
-
-        # Tentative de connexion #
-        global ip
-        global port
-        self.connexion(ip, port)
-
-    def annulation(self):
-        self.quit()
-
-    def connexion(self, IP, PORT):
-        tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            tcp.connect((IP, PORT))
-            self.quit()
-            ecran_controle()
-        except Exception:
-            pass
-
-
-# Interface de controle #
-class Fenetre_Controle(MyFrame): #
+### Interface de controle ###
+class Fenetre_Controle(MyFrame):
     def __init__(self, fenetre, **kwargs):
         MyFrame.__init__(self, fenetre, **kwargs)
         self.pack(fill='both', expand=1)
@@ -182,61 +232,25 @@ class Fenetre_Controle(MyFrame): #
         self.commande.grid(column=0, row=0, padx=5, pady=5)
 
         # Creation du bouton d'envoi #
-        self.bouton_envoi = MyButton(self.fenetre_controle, text="Envoyer", command= lambda: self.envoi_tcp())
+        self.bouton_envoi = MyButton(self.fenetre_controle, text="Envoyer", command= lambda: self.envoi_tcp(self.commande.get()))
         self.bouton_envoi.grid(column=1, row=0, padx=5, pady=5)
 
         # Creation de la zone d'affichage des reponses serveur (console) #
         self.console = tk.Listbox(self.fenetre_controle, height=3, width=40, bg='#2d2d2d', fg='#e8e8e8')
-        programmes = ['msg 1', 'msg 2', 'msg 3', 'msg 4', 'msg 5', 'msg 6', 'msg 7']
-        for element_console in programmes:
-            self.console.insert(tk.END, element_console)
+        self.console.insert(tk.END, afficher_info("Bienvenue dans la console"))
 
         # Creation de la scrollbar verticale de la console #
-        scrollbar_console_y = tk.Scrollbar(self.fenetre_controle)
-        scrollbar_console_y.grid(column=3, row=1, sticky='e')
-        scrollbar_console_y.config(command=self.console.yview)
+        scrollbar_console = tk.Scrollbar(self.fenetre_controle, orient='vertical')
+        scrollbar_console.grid(column=3, row=1, sticky='e')
+        scrollbar_console.config(command=self.console.yview)
+        self.console.grid(row=1, columnspan=2, padx=5, pady=10, sticky='w')
+        self.console.config(yscrollcommand=scrollbar_console.set)
 
-        # Creation de la scrollbar horizontale de la console #
-        scrollbar_console_x = tk.Scrollbar(self.fenetre_controle, orient='horizontal')
-        scrollbar_console_x.grid(column=0, row=2, columnspan=99, sticky='e')
-        self.console.config(xscrollcommand=scrollbar_console_x.set)
-        self.console.config(yscrollcommand=scrollbar_console_y.set)
-        scrollbar_console_x.config(command=self.console.xview)
-
-        self.console.grid(column=0, row=1, columnspan=2, padx=5, pady=10, sticky='w')
-
-    def envoi_tcp(self): # TODO
-        pass
-
-
-def ecran_connexion():
-    fenetre_connexion = MyTkApp()
-    fenetre_connexion.title("Client")
-    fenetre_connexion.resizable(width=False, height=False)
-    fenetre_connexion.geometry('{}x{}'.format(450, 432))
-
-    interface_connexion = Fenetre_Connexion(fenetre_connexion)
-    interface_connexion.mainloop()
-
-def ecran_attente_serveur():
-    fenetre_attente_serveur = MyTkApp()
-    fenetre_attente_serveur.title("Attente du serveur...")
-    fenetre_attente_serveur.resizable(width=False, height=False)
-    fenetre_attente_serveur.geometry('{}x{}'.format(200, 75))
-
-    interface_attente_serveur = Fenetre_attente_serveur(fenetre_attente_serveur)
-    interface_attente_serveur.mainloop()
-
-def ecran_controle():
-    fenetre_controle = MyTkApp()
-    fenetre_controle.title("Multi Pour Tous")
-    fenetre_controle.resizable(width=False, height=False)
-#    fenetre_controle.geometry('{}x{}'.format(250, 500))
-
-    interface_controle = Fenetre_Controle(fenetre_controle)
-    interface_controle.mainloop()
-
-
+    def envoi_tcp(self, data):
+        if data != "":
+            self.console.insert(tk.END, afficher_send(data))
+    #        tcp.send(data)
+            self.commande.delete(first=0, last=999)
 
 
 
@@ -246,8 +260,12 @@ def ecran_controle():
 
 ### PARTIE CODE PUR ###
 
-#ecran_connexion()
-ecran_controle()
+ecran_connexion()
+
+afficher_recv("ok")
+time.sleep(1)
+afficher_send("test")
+
 try:
     tcp.close()
 except NameError:
