@@ -21,6 +21,7 @@ from time import time
 
 from modules import quickTk
 from modules.const import *
+from modules.recv_and_display import recv_and_disp_stream
 
 try:
     from modules.myTk import *
@@ -394,27 +395,8 @@ class StreamRecvr:
         self._subprocess: subprocess.Popen = None
 
     def start(self, *args, **kwargs):
-        options = ''
-        video = ''
-        audio = ''
-        out_options = '-vf fps=1'
-        if self._subprocess is None:
-            self._subprocess = subprocess.Popen(
-                to_command(
-                    'ffmpeg  -re {options} -f mpegts -i udp://{address}:{port} {path}/thumb%04d.bmp'.format(
-                        options=options,
-                        video=video,
-                        audio=audio,
-                        address=self._address,
-                        port=self._port,
-                        path=get_modules_path() + os_adapt("/../pictures/recvdFrames")
-                    )),
-                stdin=subprocess.PIPE,
-                encoding='utf8'
-            )
-            print("Début StreamRcvr.")
-        else:
-            print("StreamRecvr déjà lancé.")
+        # TODO Super Adresse
+        recv_and_disp_stream()
 
     def stop(self, *args, **kwargs):
         if self._subprocess is not None:

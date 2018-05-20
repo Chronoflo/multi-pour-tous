@@ -1,7 +1,6 @@
 #!usr/bin/python3.6
 # -*- coding: <utf-8> -*-
 import subprocess
-
 from modules.const import stream_addr, stream_port
 
 try:
@@ -32,7 +31,7 @@ pressed_key = OrderedSet()
 
 
 class DynamicBG:
-    """Make a dynamic background that changes colors"""
+    """Un arrière-plan dynamique qui change de couleur dans un sens, puis dans l'autre."""
     def __init__(self, factory, renderer, ext_window, on_top_sprite=None, i=188, fps=60):
         self._factory = factory
         self._renderer = renderer
@@ -56,78 +55,39 @@ class DynamicBG:
 
 
 def get_font(font_name):
-    """Return the path of the given font_name."""
+    """Retourne le chemin de la police donnée."""
     return get_modules_path() + os_adapt("/../setup/fonts/") + font_name
 
 
+# Initialise des couleurs et un gestionnaire de polices
 my_colors = {'red': (255, 0, 0, 255),
              'nice_blue': (58, 74, 188, 255),
              'nice_gray': (50, 50, 50, 255)}
 for k, v in my_colors.items():
     my_colors[k] = sdl2.ext.Color(*v)
 
-font_manager = sdl2.ext.FontManager(get_font("OpenSans-Regular.ttf"))
+font_manager = sdl2.ext.FontManager(get_font("OpenSans-Regular.ttf"), "OpenSans")
 font_manager.add(get_font("Pacifico.ttf"), "Pacifico")
 
 
-def with_on_kb(display, sdlwindow, updt):
-    running = True
-    while running:
-        # Vérifie que l'affichage à distance est bien actif, sinon quitte
-        if display.poll() is not None:
-            running = False
-        evnts = sdl2.ext.get_events()
-        for event in evnts:
-            if event.type == SDL_QUIT:
-                running = False
-                break
-            if event.type == sdl2.SDL_KEYDOWN:
-                pressed_key.add(event.key.keysym.sym)
-                updt()
-            elif event.type == sdl2.SDL_KEYUP:
-                pressed_key.remove(event.key.keysym.sym)
-                updt()
+def recv_and_disp_stream(address=stream_addr, port=stream_port, soft_name="The Pong Game", recv_enable=True,
+                         on_kbupdt=None):
+    """
+    Affiche un stream vidéo reçu par udp.
 
-    SDL_DestroyWindow(sdlwindow)
-    SDL_Quit()
-    if display is not None:
-        display.kill()
-
-    return True
-
-
-def without_on_kb(display, sdlwindow):
-    running = True
-    while running:
-        # Vérifie que l'affichage à distance est bien actif, sinon quitte
-        if display.poll() is not None:
-            running = False
-        evnts = sdl2.ext.get_events()
-        for event in evnts:
-            if event.type == SDL_QUIT:
-                running = False
-                break
-            if event.type == sdl2.SDL_KEYDOWN:
-                pressed_key.add(event.key.keysym.sym)
-            elif event.type == sdl2.SDL_KEYUP:
-                pressed_key.remove(event.key.keysym.sym)
-
-    SDL_DestroyWindow(sdlwindow)
-    SDL_Quit()
-    if display is not None:
-        display.kill()
-
-    return True
-
-
-def recv_stream(address=stream_addr, port=stream_port, display_enabled=True, on_kb_update=None):
+    :param address: L'adresse source du stream
+    :param port: Le port source du stream
+    :param soft_name: Le nom du logiciel source
+    :param recv_enable: Définit si le stream doit être reçu
+    :param on_kbupdt: La fonction à appeler en cas de mise à jour du clavier
+    :return:
+    """
     display = None
-    if display_enabled:
+    if recv_enable:
         display = subprocess.Popen(
              to_command(
-                 #'ffmpeg -re -f mpegts -i udp://{}:{} -f sdl CLI'.format(
-                 'ffmpeg -f gdigrab -i title="The Pong Game" -f sdl2 "The Pong Game"'.format(
-                    address, port
+                 'ffmpeg -re -f mpegts -i udp://{}:{} -f sdl2 "{}"'.format(
+                    address, port, soft_name
                  )))
     setup_third_party()
 
@@ -151,7 +111,7 @@ def recv_stream(address=stream_addr, port=stream_port, display_enabled=True, on_
     factory = sdl2.ext.SpriteFactory(sdl2.ext.SOFTWARE)
     renderer = factory.create_sprite_render_system(window)
 
-    # Crée un sprite "background" à partir d'une couleur unie
+    # Crée un sprite "background" et un sprite texte affiché dessus
     background = factory.from_color(my_colors['nice_blue'], (window_w, window_h))
     background_txt = factory.from_text("Cliquer ici pour envoyez vos entrées.",
                                        fontmanager=font_manager, alias="Pacifico",
@@ -163,16 +123,35 @@ def recv_stream(address=stream_addr, port=stream_port, display_enabled=True, on_
     window.show()
     renderer.render((background, background, background_txt))
 
-    if on_kb_update is not None:
-        with_on_kb(display, sdlwindow, on_kb_update)
-    else:
-        without_on_kb(display, sdlwindow)
+    running = True
+    while running:
+        # Vérifie que l'affichage à distance est bien actif, sinon quitte
+        if display.poll() is not None:
+            running = False
+        evnts = sdl2.ext.get_events()
+        for event in evnts:
+            if event.type == SDL_QUIT:
+                running = False
+                break
+            if event.type == sdl2.SDL_KEYDOWN:
+                pressed_key.add(event.key.keysym.sym)
+                if on_kbupdt is not None:
+                    on_kbupdt()
+            elif event.type == sdl2.SDL_KEYUP:
+                pressed_key.remove(event.key.keysym.sym)
+                if on_kbupdt is not None:
+                    on_kbupdt()
+        SDL_Delay(50)
 
+    SDL_DestroyWindow(sdlwindow)
+    SDL_Quit()
+    if display is not None:
+        display.kill()
     return 0
 
 
 if __name__ == '__main__':
-    recv_stream()
+    recv_and_disp_stream()
 
 
 

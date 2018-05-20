@@ -2,7 +2,7 @@
 # -*- coding: <utf-8> -*-
 import traceback
 from datetime import datetime
-from threading import Timer, Lock
+from threading import Timer, Lock, Thread
 from inspect import currentframe, getfile
 from socket import gethostname
 import os
@@ -105,6 +105,11 @@ class HandyIndexGenerator:
     def get_n_given_ids(self):
         """Retourne le nombre d'index qui ont été fournis"""
         return self._index + 1
+
+
+class LaunchInThread(Thread):
+    def __init__(self, func, name, daemon=True):
+        super().__init__(name=name, daemon=daemon,)
 
 
 class InfiniteTimer:
