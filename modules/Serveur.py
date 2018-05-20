@@ -591,7 +591,7 @@ class RecvData(Thread):
                                         str(Client.number_of_clients) +
                                         " clients sont connectés.")
             if in_error:
-                self._master.disconnect()
+                self._master.disconnect() # fezf
 
         log.add("RecvDataThread de " + self._master.name + " terminée.")
 
