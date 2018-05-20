@@ -15,10 +15,11 @@ import subprocess
 import sys
 import socket as sokt
 from select import select
-from time import time
+from time import time, sleep
 
 from modules import quickTk
 from modules import const
+from modules.const import KEYMSG, MSGKEYSEP, MSGSEP
 
 try:
     from modules.myTk import *
@@ -137,7 +138,6 @@ class Application(MyTkApp):
         self._connectionThread.start()
 
     def initiate_talk(self):
-        self._socket.setblocking(0)
         self.recvDataThread.start()
         self.sendDataThread.start()
 
@@ -153,7 +153,8 @@ class Application(MyTkApp):
                 if ready_to_write:
                     if msg != "":
                         self._socket.send(msg.encode('utf8'))
-                        log.add(msg + " a été envoyé.")
+                        if msg[0] != KEYMSG:
+                            log.add(msg + " a été envoyé.")
                 else:
                     log.add("Échec envoi message : le serveur est indisponible.")
                 if in_error:
@@ -261,11 +262,12 @@ class IHM(MyFrame):
             pass
 
     def send_keys(self, pressed_keys: set):
-        msg = const.KEYMSG + const.MSGSEP
+        msg = const.KEYMSG + const.MSGKEYSEP
         for i in pressed_keys:
-            msg += str(i) + const.MSGSEP
-        # self._app.send_msg()
-        print(msg[:-1].split("\r"))
+            msg += str(i) + const.MSGKEYSEP
+        msg = msg[:-1] + MSGSEP
+        print(msg)
+        self._app.send_msg(msg)
 
     def place_and_create_widgets(self):
         """Place tous les widgets et en crée certains sans références."""
@@ -362,11 +364,13 @@ class ConnectionThread(Thread):
         self.isRunning = False
 
     def run(self):
+        from time import sleep
         self.isRunning = True
 
         is_connected = False
+        log.add("Essai connection..")
         while not is_connected and self._mainThread.isRunning:
-            log.add("Essai connection..")
+            sleep(0.5)
             try:
                 self._socket.connect((self._targetAddress, self._targetPort))
                 log.add("Réussite.")
@@ -376,9 +380,10 @@ class ConnectionThread(Thread):
 
             except ConnectionRefusedError:
                 if self._mainThread.isRunning:
-                    log.add(
-                        "Connection refusée, peut-être le serveur est-il \
-surchargé ou non connecté.")
+                    pass
+        #                     log.add(
+        #                         "Connection refusée, peut-être le serveur est-il \
+        # surchargé ou non connecté.")
         log.add("ConnectionThread terminée.")
 
         self.isRunning = False
@@ -399,7 +404,7 @@ class StreamRecvr:
         self._on_kbupdt = on_kbupdt
         self._subprocess: subprocess.Popen = None
         self._stream = Stream()
-        self._thread = LaunchOnThread(self.run, "StreamDisp", daemon=False)
+        self._thread = LaunchOnThread(self.run, "StreamDisp", daemon=True)
 
     def start(self, *args, **kwargs):
         # TODO Super Adresse
@@ -407,14 +412,14 @@ class StreamRecvr:
             try:
                 self._thread.start()
             except RuntimeError:
-                self._thread = LaunchOnThread(self.run, "StreamDisp", daemon=False)
+                self._thread = LaunchOnThread(self.run, "StreamDisp", daemon=True)
                 self._thread.start()
         else:
             print("La thread est déjà active.")
 
     def run(self):
         # TODO Super Adresse
-        self._stream.recv_and_disp(self._address, self._port, self._soft_name, self._on_kbupdt)
+        self._stream.recv_and_disp(self._address, self._port, self._soft_name, self._on_kbupdt, enable_display=False)
 
     def stop(self, *args, **kwargs):
         self._stream.stop()
@@ -443,6 +448,8 @@ class RecvDataThread(Thread):
                 log.add('Message reçu : "' + msg + '"')
                 if msg == "q":
                     self._mainThread.terminate()
+            sleep(0.03)
+
         log.add("RecvDataThread terminée.")
 
 
@@ -467,6 +474,8 @@ class SendDataThread(Thread):
                 if msg != "":
                     self._socket.send(msg.encode('utf8'))
                     log.add(msg + " a été envoyé.")
+            sleep(0.03)
+
         log.add("SendDataThread terminée")
 
 
@@ -475,7 +484,7 @@ def run_app():
     quickTk.disappear(app)
     app.initialize_ihm()
     quickTk.center(app)
-    # app.connect_to_server(ADDRESS, PORT)
+    app.connect_to_server(ADDRESS, PORT)
     app.mainloop()
     sys.exit()
 

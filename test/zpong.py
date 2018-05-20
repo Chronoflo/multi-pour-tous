@@ -1,5 +1,6 @@
 import sys
 from math import cos
+from time import sleep
 
 from modules.handyfunctions import get_modules_path, ensure_path, os_adapt
 from modules.easydependencies import setup_third_party
@@ -222,22 +223,23 @@ def run():
                 running = False
                 break
             if event.type == sdl2.SDL_KEYDOWN:
-                if event.key.keysym.sym == sdl2.SDLK_UP:
+                if event.key.keysym.sym == sdl2.SDLK_o:
                     player2.velocity.vy = -player2.playerdata.speed
                 elif event.key.keysym.sym == sdl2.SDLK_z:
                     player1.velocity.vy = -player1.playerdata.speed
-                elif event.key.keysym.sym == sdl2.SDLK_DOWN:
+                elif event.key.keysym.sym == sdl2.SDLK_l:
                     player2.velocity.vy = player2.playerdata.speed
                 elif event.key.keysym.sym == sdl2.SDLK_s:
                     player1.velocity.vy = player1.playerdata.speed
             elif event.type == sdl2.SDL_KEYUP:
                 if event.key.keysym.sym in (sdl2.SDLK_z, sdl2.SDLK_s):
                     player1.velocity.vy = 0
-                elif event.key.keysym.sym in (sdl2.SDLK_UP, sdl2.SDLK_DOWN):
+                elif event.key.keysym.sym in (sdl2.SDLK_o, sdl2.SDLK_l):
                     player2.velocity.vy = 0
-        sdl2.SDL_Delay(10)
+        sdl2.SDL_Delay(20)
         world.process()
         window.refresh()
+        sleep(0)
     return 0
 
 

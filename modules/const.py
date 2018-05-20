@@ -1,3 +1,4 @@
+"""Un module qui contient toutes les constantes utilisées par multi-pour-tous."""
 from modules.easydependencies import setup_third_party
 
 setup_third_party()
@@ -13,7 +14,9 @@ KEYPRESS = 'P'
 KEYUP = 'U'
 KEYMSG = 'K'
 TEXTMSG = 'M'
-MSGSEP = "\r"
+MSGKEYSEP = '|'
+MSGSEP = "@"
+
 
 # Aide à utiliser win32
 win32_LEFT = 0
@@ -130,7 +133,8 @@ DIK_DIVIDE = 0xB5
 DIK_SYSRQ = 0xB7
 DIK_RMENU = 0xB8
 DIK_HOME = 0xC7
-DIK_UP = 0xC8
+DIK_UP = 72
+DIK_NUMUP = 0xC8
 DIK_PRIOR = 0xC9
 DIK_LEFT = 0xCB
 DIK_RIGHT = 0xCD
@@ -335,6 +339,7 @@ sdl_to_dik = {27: DIK_ESCAPE,
               1073741891: DIK_F10,
               1073741892: DIK_F11,
               1073741907: DIK_SCROLL,
+              1073741895: DIK_NUMLOCK,
               1073741919: DIK_NUMPAD7,
               1073741920: DIK_NUMPAD8,
               1073741921: DIK_NUMPAD9,

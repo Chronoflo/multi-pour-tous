@@ -10,11 +10,13 @@
 # Copyright:   (c) Florian 2018
 # Licence:     <your licence>
 # -------------------------------------------------------------------------------
-from time import sleep
 
 from modules.const import KEYMSG, KEYPRESS, KEYUP, MSGSEP, win32_LEFT, win32_TOP, win32_RIGHT, win32_BOTTOM, \
-    stream_addr, stream_port, stream_fps
+    stream_addr, stream_port, stream_fps, sdl_to_dik, MSGKEYSEP
 import subprocess
+from time import sleep
+from modules.symdirectinput import press_key, release_key
+
 try:
     import sys
     import tkinter as tk
@@ -85,7 +87,7 @@ class MyApplication(MyTkApp):
         self.isRunning: bool = True
 
         self.connectedClients: list = []
-        self.pressed_keys = set()
+        self.pressed_keys: set = set()
 
         self.mainFrame: MyFrame = None
         self.theme: dict = self.theme  # self.theme est un attribut  hérité
@@ -335,7 +337,7 @@ class IHM(MyFrame):
         configure_columns_rows(self, 3, 1, clmn_weights=[5, 9, 5])
 
         self.tv = tk.Canvas(master=self, bg=self.theme['backgroundColor'])
-        self._stream = Stream()
+        self._stream = GameStream()
         # self._timerStream = InfiniteTimer(0.5, self._stream.run)
         self.buttons_frame = MyFrame(master=self, bg=self.theme['buttonsBackgroundColor'])
         self.buttons_group = MyFrame(master=self.buttons_frame, bg=self.theme['buttonsBackgroundColor'])
@@ -455,7 +457,6 @@ class Client:
         Client.idToGive += 1
 
         self.socket = client_socket
-        self.socket.setblocking(0)
         self.send(msg)
 
         self.recvDataThread = RecvData(app=self._app, master=self)
@@ -522,6 +523,7 @@ class ServerThread(Thread):
                     except OSError:
                         log.add("Serveur déconnecté.")
                         break
+                sleep(1)
         except OSError as error:
             log.add(formatted_error("Error : " + error.strerror))
             messagebox.showerror("Mise en place serveur",
@@ -571,10 +573,28 @@ class RecvData(Thread):
                 if msgs:
                     for msg in msgs.split(MSGSEP):
                         if msg:
+                            # msg[0] contient l'identifiant du type du message
                             if msg[0] == KEYMSG:
-                                keys = msg[2:].split(MSGSEP)
-                                self._app.pressed_keys = keys
-                                print(self._app.pressed_keys)
+                                # Récupère tous les touches reçues à partir du message
+                                recvd_pressed_keys = {int(i) for i in msg[2:].split(MSGKEYSEP) if i != ''}
+
+                                # Compare les touches déjà pressées et celles reçues
+                                keys_to_press = recvd_pressed_keys.difference(self._app.pressed_keys)
+                                keys_to_release = self._app.pressed_keys.difference(recvd_pressed_keys)
+
+                                if keys_to_press:
+                                    print("Press:", keys_to_press)
+                                if keys_to_release:
+                                    print("Release:", keys_to_release)
+
+                                # Actualise les touches pressées et relâchées
+                                for key in keys_to_press:
+                                    press_key(sdl_to_dik[key])
+                                for key in keys_to_release:
+                                    release_key(sdl_to_dik[key])
+
+                                # Met à jour le set contenant les touches pressées
+                                self._app.pressed_keys = recvd_pressed_keys
                             else:
                                 log.add('Message reçu : "' + msg + '"')
 
@@ -592,11 +612,12 @@ class RecvData(Thread):
                                         " clients sont connectés.")
             if in_error:
                 self._master.disconnect() # fezf
+            sleep(0.02)
 
         log.add("RecvDataThread de " + self._master.name + " terminée.")
 
 
-class Stream:
+class GameStream:
     def __init__(self, src_name='The Pong Game', address=stream_addr, port=stream_port, fps=stream_fps):
         check_vars_types(
             (src_name, 'window_name', str),
@@ -677,7 +698,7 @@ def run_app():
 
 def main():
     global log
-    log = Log(tag="SuperServeur", file_path=get_modules_path() + "/../logs/log_server.log", n_entries_before_save=5)
+    log = Log(tag="SuperServeur", file_path=get_modules_path() + "/../logs/log_server.log", n_entries_before_save=50)
     global eventLog
     eventLog = Log("SuperServeurEvents", False, get_modules_path() + "/../logs/log_server_events.log", 25)
     eventLog.add("Lancement application...")

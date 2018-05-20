@@ -77,8 +77,6 @@ class MyLabelFrame(MyWidgets, tk.LabelFrame):
         tk.LabelFrame.__init__(self, master=master, cnf=tk_attributes)
 
 
-
-
 class Fields(MyWidgets):
     """Classe abstraite qui définit les objets de types champ. (SpinBox, Field...)"""
     def __init__(self, master, theme_keys, theme, tk_attributes):
@@ -156,6 +154,7 @@ class HintedUserEntry(Fields, tk.Entry):
     def __init__(self, master, hint=None, onreturn_func=None, event_log=None, theme_keys=None, theme=None, **kwargs):
         """
         Crée une HintedUserEntry.
+
         :param master: doit être un objet tk
         :param hint: hint à afficher (aucun par défaut)
         :param onreturn_func:
