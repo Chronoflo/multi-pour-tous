@@ -70,88 +70,99 @@ font_manager = sdl2.ext.FontManager(get_font("OpenSans-Regular.ttf"), "OpenSans"
 font_manager.add(get_font("Pacifico.ttf"), "Pacifico")
 
 
-def recv_and_disp_stream(address=stream_addr, port=stream_port, soft_name="The Pong Game", recv_enable=True,
-                         on_kbupdt=None):
-    """
-    Affiche un stream vidéo reçu par udp.
+class Stream:
+    def __init__(self):
+        self._disp_proc = None
+        self.running = False
 
-    :param address: L'adresse source du stream
-    :param port: Le port source du stream
-    :param soft_name: Le nom du logiciel source
-    :param recv_enable: Définit si le stream doit être reçu
-    :param on_kbupdt: La fonction à appeler en cas de mise à jour du clavier
-    :return:
-    """
-    display = None
-    if recv_enable:
-        display = subprocess.Popen(
+    def recv_and_disp(self, address=stream_addr, port=stream_port, soft_name="The Pong Game",
+                             on_kbupdt=None):
+        """
+        Affiche un stream vidéo reçu par udp.
+
+        :param address: L'adresse source du stream
+        :param port: Le port source du stream
+        :param soft_name: Le nom du logiciel source
+        :param on_kbupdt: La fonction à appeler en cas de mise à jour du clavier
+        :return:
+        """
+        self._disp_proc = subprocess.Popen(
              to_command(
                  'ffmpeg -re -f mpegts -i udp://{}:{} -f sdl2 "{}"'.format(
                     address, port, soft_name
-                 )))
-    setup_third_party()
+                 )), stdin=subprocess.PIPE)
+        setup_third_party()
+        sdl2.ext.init()
 
-    sdl2.ext.init()
+        # Get informations about the usable area of the screen
+        usable_bounds = SDL_Rect()
+        SDL_GetDisplayUsableBounds(0, usable_bounds)
 
-    # Get informations about the usable area of the screen
-    usable_bounds = SDL_Rect()
-    SDL_GetDisplayUsableBounds(0, usable_bounds)
+        # Creates window
+        window_h = int(usable_bounds.h * 0.1)
+        window = sdl2.ext.Window("CLIENT",
+                                 (usable_bounds.w, window_h),
+                                 (SDL_WINDOWPOS_CENTERED, usable_bounds.h - window_h),
+                                 SDL_WINDOW_BORDERLESS)
+        window_w = window.size[0]
+        window_h = window.size[1]
+        sdlwindow = window.window
 
-    # Creates window
-    window_h = int(usable_bounds.h * 0.1)
-    window = sdl2.ext.Window("CLIENT",
-                             (usable_bounds.w, window_h),
-                             (SDL_WINDOWPOS_CENTERED, usable_bounds.h - window_h),
-                             SDL_WINDOW_BORDERLESS)
-    window_w = window.size[0]
-    window_h = window.size[1]
-    sdlwindow = window.window
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Initialisation".encode("utf8"),
+                                 "Veuillez patienter jusqu'à l'affichage du stream.".encode("utf8"),
+                                 sdlwindow)
+        # Crée la factory qui servira à créer les sprites et le renderer qui les affichera
+        factory = sdl2.ext.SpriteFactory(sdl2.ext.SOFTWARE)
+        renderer = factory.create_sprite_render_system(window)
 
-    # Crée la factory qui servira à créer les sprites et le renderer qui les affichera
-    factory = sdl2.ext.SpriteFactory(sdl2.ext.SOFTWARE)
-    renderer = factory.create_sprite_render_system(window)
+        # Crée un sprite "background" et un sprite texte affiché dessus
+        background = factory.from_color(my_colors['nice_blue'], (window_w, window_h))
+        background_txt = factory.from_text("Cliquer ici pour envoyez vos entrées.",
+                                           fontmanager=font_manager, alias="Pacifico",
+                                           size=int(window_h * 0.5))
+        background_txt.position = (window_w // 2 - background_txt.size[0] // 2,
+                                   window_h // 2 - background_txt.size[1] // 2)
 
-    # Crée un sprite "background" et un sprite texte affiché dessus
-    background = factory.from_color(my_colors['nice_blue'], (window_w, window_h))
-    background_txt = factory.from_text("Cliquer ici pour envoyez vos entrées.",
-                                       fontmanager=font_manager, alias="Pacifico",
-                                       size=int(window_h * 0.5))
-    background_txt.position = (window_w // 2 - background_txt.size[0] // 2,
-                               window_h // 2 - background_txt.size[1] // 2)
+        # Display window with background and text
+        window.show()
+        renderer.render((background, background, background_txt))
 
-    # Display window with background and text
-    window.show()
-    renderer.render((background, background, background_txt))
+        self.running = True
+        while self.running:
+            # Vérifie que l'affichage à distance est bien actif, sinon quitte
+            if self._disp_proc.poll() is not None:
+                self.running = False
+            evnts = sdl2.ext.get_events()
+            for event in evnts:
+                if event.type == SDL_QUIT:
+                    self.running = False
+                    break
+                if event.type == sdl2.SDL_KEYDOWN:
+                    pressed_key.add(event.key.keysym.sym)
+                    if on_kbupdt is not None:
+                        on_kbupdt()
+                elif event.type == sdl2.SDL_KEYUP:
+                    pressed_key.remove(event.key.keysym.sym)
+                    if on_kbupdt is not None:
+                        on_kbupdt()
+            SDL_Delay(50)
 
-    running = True
-    while running:
-        # Vérifie que l'affichage à distance est bien actif, sinon quitte
-        if display.poll() is not None:
-            running = False
-        evnts = sdl2.ext.get_events()
-        for event in evnts:
-            if event.type == SDL_QUIT:
-                running = False
-                break
-            if event.type == sdl2.SDL_KEYDOWN:
-                pressed_key.add(event.key.keysym.sym)
-                if on_kbupdt is not None:
-                    on_kbupdt()
-            elif event.type == sdl2.SDL_KEYUP:
-                pressed_key.remove(event.key.keysym.sym)
-                if on_kbupdt is not None:
-                    on_kbupdt()
-        SDL_Delay(50)
+        SDL_DestroyWindow(sdlwindow)
+        SDL_Quit()
+        self._disp_proc.kill()
+        return 0
 
-    SDL_DestroyWindow(sdlwindow)
-    SDL_Quit()
-    if display is not None:
-        display.kill()
-    return 0
+    def stop(self):
+        self.running = False
+        if self._disp_proc is not None:
+            if self._disp_proc.poll() is None:
+                self._disp_proc.communicate(b'q')
+                self._disp_proc.kill()
 
 
 if __name__ == '__main__':
-    recv_and_disp_stream()
+    stream = Stream()
+    stream.recv_and_disp()
 
 
 
