@@ -11,6 +11,7 @@ data = take_part(take_part(take_part(data, AFTER, '&', RIGHT), AFTER, '[', RIGHT
 
 dic_DIK = [take_part(i, AFTER, ' ', RIGHT) for i in data.split(',')]
 ii = 0
+
 def get_next():
     global running
     global ii
