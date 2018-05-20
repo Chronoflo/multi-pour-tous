@@ -27,7 +27,6 @@ except ImportError as e:
 
 
 kb_state = SDL_GetKeyboardState(None)
-pressed_key = OrderedSet()
 
 
 class DynamicBG:
@@ -71,9 +70,11 @@ font_manager.add(get_font("Pacifico.ttf"), "Pacifico")
 
 
 class Stream:
-    def __init__(self):
+    def __init__(self, on_kbupdt=None):
         self._disp_proc = None
         self.running = False
+        self.pressed_key = set()
+        self.on_kb = on_kbupdt
 
     def recv_and_disp(self, address=stream_addr, port=stream_port, soft_name="The Pong Game",
                              on_kbupdt=None):
@@ -86,6 +87,9 @@ class Stream:
         :param on_kbupdt: La fonction à appeler en cas de mise à jour du clavier
         :return:
         """
+        if on_kbupdt is not None:
+            self.on_kb = on_kbupdt
+
         self._disp_proc = subprocess.Popen(
              to_command(
                  'ffmpeg -re -f mpegts -i udp://{}:{} -f sdl2 "{}"'.format(
@@ -138,13 +142,13 @@ class Stream:
                     self.running = False
                     break
                 if event.type == sdl2.SDL_KEYDOWN:
-                    pressed_key.add(event.key.keysym.sym)
-                    if on_kbupdt is not None:
-                        on_kbupdt()
+                    self.pressed_key.add(event.key.keysym.sym)
+                    if self.on_kb is not None:
+                        self.on_kb(self.pressed_key)
                 elif event.type == sdl2.SDL_KEYUP:
-                    pressed_key.remove(event.key.keysym.sym)
-                    if on_kbupdt is not None:
-                        on_kbupdt()
+                    self.pressed_key.remove(event.key.keysym.sym)
+                    if self.on_kb is not None:
+                        self.on_kb(self.pressed_key)
             SDL_Delay(50)
 
         SDL_DestroyWindow(sdlwindow)

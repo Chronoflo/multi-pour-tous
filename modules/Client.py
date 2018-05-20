@@ -13,21 +13,19 @@
 # TODO : toute la partie réseau est à refaire
 import subprocess
 import sys
-import traceback
-from threading import Thread
 import socket as sokt
 from select import select
 from time import time
 
 from modules import quickTk
-from modules.const import *
-from modules.recv_and_display import recv_and_disp_stream
+from modules import const
 
 try:
     from modules.myTk import *
     from modules.handyfunctions import *
     from PIL import Image, ImageTk
     from orderedset import OrderedSet
+    from modules.recv_and_display import Stream
 
     if sys.platform == 'win32':
         import win32gui
@@ -41,6 +39,7 @@ except ImportError:
     from modules.handyfunctions import *
     from PIL import Image, ImageTk
     from orderedset import OrderedSet
+    from modules.recv_and_display import Stream
 
     if sys.platform == 'win32':
         import win32gui
@@ -85,19 +84,19 @@ class Application(MyTkApp):
         if (time() - self._key_pressed[event.keysym]) > 0.1:
             self._key_pressed[event.keysym] = time()
             if self._is_connected:
-                self.send_key(event.keysym, KEYPRESS)
+                self.send_key(event.keysym, const.KEYPRESS)
                 self.on_key_update()
 
     def on_key_up(self, event):
         if (time() - self._key_pressed[event.keysym]) > 0.1:
             self._key_pressed.remove(event.keysym)
             if self._is_connected:
-                self.send_key(event.keysym, KEYUP)
+                self.send_key(event.keysym, const.KEYUP)
                 self.on_key_update()
 
     def send_key(self, key, keyevent):
         try:
-            self._socket.send((KEYMSG + keyevent + key + MSGSEP).encode('utf8'))
+            self._socket.send((const.KEYMSG + keyevent + key + const.MSGSEP).encode('utf8'))
         except BrokenPipeError:
             print("Envoi touche impossible, le client n'est pas connecté au serveur.")
 
@@ -242,7 +241,8 @@ class IHM(MyFrame):
         self.default_photo = ImageTk.PhotoImage(Image.open("{path}/../pictures/forest.jpg".format(
             path=get_modules_path())))
         self.previous_nfps: int = 1
-        self._streamRcvr = StreamRecvr()
+
+        self._streamRcvr = StreamRecvr(on_kbupdt=self.send_keys)
 
         configure_columns_rows(self, 3, 1, clmn_weights=[5, 9, 5])
 
@@ -252,14 +252,15 @@ class IHM(MyFrame):
         self.buttons_group = MyFrame(master=self.buttons_frame, bg=self.theme['buttonsBackgroundColor'])
         self._userEntry_StrV = tk.StringVar()
         self._userEntry = HintedUserEntry(master=self.buttons_group, hint=entry_hint, textvariable=self._userEntry_StrV,
-                                          onreturn_func=self.send_msg, event_log=eventLog)
-        self._userEntry.bind('<Return>', self.send_msg)
+                                          onreturn_func=self.send_fieldmsg, event_log=eventLog)
+        self._userEntry.bind('<Return>', self.send_fieldmsg)
         self._spinbox_fps = CheckedSpinBox(self.buttons_group, 1, 999, "SpinBox_fps",
                                            hint='fps', event_log=eventLog)
 
         self.place_and_create_widgets()
 
-    def send_msg(self, event):
+    def send_fieldmsg(self, event):
+        """Envoie le contenue du champ."""
         eventLog.add(event)
         text = self._userEntry.get()
         if text != "":
@@ -267,6 +268,13 @@ class IHM(MyFrame):
             self._userEntry.delete(0, 'end')
         else:
             pass
+
+    def send_keys(self, pressed_keys: set):
+        msg = const.KEYMSG + const.MSGSEP
+        for i in pressed_keys:
+            msg += str(i) + const.MSGSEP
+        # self._app.send_msg()
+        print(msg[:-1].split("\r"))
 
     def place_and_create_widgets(self):
         """Place tous les widgets et en crée certains sans références."""
@@ -298,15 +306,15 @@ class IHM(MyFrame):
                 # Copie le DC de la source vers le DC de destination en le redimensionnant
                 win32gui.StretchBlt(
                     target_window_dc,
-                    0, 0, dest_rect_dc[win32_RIGHT], dest_rect_dc[win32_BOTTOM],
+                    0, 0, dest_rect_dc[const.win32_RIGHT], dest_rect_dc[const.win32_BOTTOM],
                     source_window_dc,
                     0, 0, win32api.GetSystemMetrics(SM_CXSCREEN), win32api.GetSystemMetrics(SM_CYSCREEN),
                     SRCCOPY)
 
                 source_bitmap = win32gui.CreateCompatibleBitmap(
                     target_window_dc,
-                    dest_rect_dc[win32_RIGHT] - dest_rect_dc[win32_LEFT],
-                    dest_rect_dc[win32_BOTTOM] - dest_rect_dc[win32_TOP])
+                    dest_rect_dc[const.win32_RIGHT] - dest_rect_dc[const.win32_LEFT],
+                    dest_rect_dc[const.win32_BOTTOM] - dest_rect_dc[const.win32_TOP])
 
                 if source_bitmap is None:
                     log.add("Échec création bitmap.")
@@ -384,28 +392,40 @@ surchargé ou non connecté.")
         self.isRunning = False
 
 
-class StreamRecvr(Thread):
-    def __init__(self, address: str=stream_addr, port: str=stream_port):
+class StreamRecvr:
+    """Classe qui sert à manipuler la classe Stream de recv_and_display."""
+    def __init__(self, address: str=const.stream_addr, port: str=const.stream_port, soft_name="The Pong Game",
+                 on_kbupdt=None):
         check_vars_types(
             (address, 'address', str),
-            (port, 'port', str)
+            (port, 'port', str),
+            (soft_name, "soft_name", str)
         )
         self._address: str = address
         self._port: str = port
+        self._soft_name: str = soft_name
+        self._on_kbupdt = on_kbupdt
         self._subprocess: subprocess.Popen = None
+        self._stream = Stream()
+        self._thread = LaunchOnThread(self.run, "StreamDisp", daemon=False)
 
-    def run(self, *args, **kwargs):
+    def start(self, *args, **kwargs):
         # TODO Super Adresse
-        recv_and_disp_stream()
+        if not self._thread.is_alive():
+            try:
+                self._thread.start()
+            except RuntimeError:
+                self._thread = LaunchOnThread(self.run, "StreamDisp", daemon=False)
+                self._thread.start()
+        else:
+            print("La thread est déjà active.")
+
+    def run(self):
+        # TODO Super Adresse
+        self._stream.recv_and_disp(self._address, self._port, self._soft_name, self._on_kbupdt)
 
     def stop(self, *args, **kwargs):
-        if self._subprocess is not None:
-            self._subprocess.communicate('q')
-            self._subprocess.kill()
-            self._subprocess = None
-            print("Fin StreamRcvr.")
-        else:
-            print("Ce StreamRcvr n'est déjà pas actif.")
+        self._stream.stop()
 
 
 class RecvDataThread(Thread):
