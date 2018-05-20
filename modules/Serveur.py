@@ -85,6 +85,7 @@ class MyApplication(MyTkApp):
         self.isRunning: bool = True
 
         self.connectedClients: list = []
+        self.pressed_keys = set()
 
         self.mainFrame: MyFrame = None
         self.theme: dict = self.theme  # self.theme est un attribut  hérité
@@ -571,11 +572,9 @@ class RecvData(Thread):
                     for msg in msgs.split(MSGSEP):
                         if msg:
                             if msg[0] == KEYMSG:
-                                key = msg[2:]
-                                if msg[1] == KEYPRESS:
-                                    print(key + str(" pressed."))
-                                if msg[1] == KEYUP:
-                                    print(key + str(" released."))
+                                keys = msg[2:].split(MSGSEP)
+                                self._app.pressed_keys = keys
+                                print(self._app.pressed_keys)
                             else:
                                 log.add('Message reçu : "' + msg + '"')
 
