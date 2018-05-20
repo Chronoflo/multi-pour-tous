@@ -49,6 +49,10 @@ class Fenetre_Config(MyFrame):
         self.nouveau_programme = tk.Entry(self.fenetre_ajout, textvariable=self.nouveau_programme, width=30)
         self.nouveau_programme.grid(column=0, row=0, padx=5, pady=5)
 
+        # Creation du bouton de suppression #
+        self.bouton_ajout = MyButton(self.fenetre_ajout, text="Ajouter", command= lambda: self.suppression(self.nouveau_programme.get()))
+        self.bouton_ajout.grid(column=1, row=0, padx=5, pady=5)
+
         # Creation du bouton d'ajout #
         self.bouton_ajout = MyButton(self.fenetre_ajout, text="Ajouter", command= lambda: self.verification_ajout(self.nouveau_programme.get()))
         self.bouton_ajout.grid(column=1, row=0, padx=5, pady=5)
