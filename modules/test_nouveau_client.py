@@ -8,7 +8,6 @@ send = ""
 recv = ""
 
 tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-connected = False
 
 ip = ""
 port = ""
@@ -68,11 +67,11 @@ def ecran_connexion():
     interface_connexion = Fenetre_Connexion(fenetre_connexion)
     interface_connexion.mainloop()
 
-def ecran_attente_serveur():
+def ecran_serveur_off():
     fenetre_attente_serveur = MyTkApp()
-    fenetre_attente_serveur.title("Attente du serveur...")
+    fenetre_attente_serveur.title("Serveur injoignable")
     fenetre_attente_serveur.resizable(width=False, height=False)
-    fenetre_attente_serveur.geometry('{}x{}'.format(200, 65))
+    fenetre_attente_serveur.geometry('{}x{}'.format(200, 70))
 
     interface_attente_serveur = Fenetre_attente_serveur(fenetre_attente_serveur)
     interface_attente_serveur.mainloop()
@@ -167,23 +166,24 @@ class Fenetre_Connexion(MyFrame):
                 self.warning_port_serveur.pack()
                 port_valide = False
 
-            if adresse_valide == True and port_valide == True:
+            if adresse_valide is True and port_valide is True:
                 global ip
                 ip = HOST
 
                 global port
                 port = PORT
-        print(HOST, PORT)
-        ecran_attente_serveur()
 
         # Tentative de connexion #
-        global tcp
-#        connexion = ThreadConnexion(ip, port, tcp)
-#        connexion.start()
-#        connexion.join()
-#        print("fin thread", connected)
-        tcp.connect((ip, port))
-        tcp.send("hello")
+        try:
+            global tcp
+            tcp.connect((ip, port))
+            data = "hello"
+            data = data.encode()
+            tcp.send(data)
+            ecran_controle()
+        except OSError:
+            ecran_serveur_off()
+
 
 ### Interface d'attente du serveur ###
 class Fenetre_attente_serveur(MyFrame):
@@ -196,7 +196,7 @@ class Fenetre_attente_serveur(MyFrame):
         self.fenetre_connexion.place(width=200, height=75)
 
         # Creation de la zone de texte "En attente du serveur" #
-        self.texte_attente_serveur = tk.Label(self.fenetre_connexion, text="En attente du serveur... ")
+        self.texte_attente_serveur = tk.Label(self.fenetre_connexion, text="Le serveur n'est pas\njoignable, veuillez\nreessayer", fg="red")
         self.texte_attente_serveur.pack()
 
 ### Interface de controle ###
@@ -249,7 +249,8 @@ class Fenetre_Controle(MyFrame):
     def envoi_tcp(self, data):
         if data != "":
             self.console.insert(tk.END, afficher_send(data))
-    #        tcp.send(data)
+            data = data.encode()
+            tcp.send(data)
             self.commande.delete(first=0, last=999)
 
 
