@@ -384,7 +384,7 @@ surchargé ou non connecté.")
         self.isRunning = False
 
 
-class StreamRecvr:
+class StreamRecvr(Thread):
     def __init__(self, address: str=stream_addr, port: str=stream_port):
         check_vars_types(
             (address, 'address', str),
@@ -394,7 +394,7 @@ class StreamRecvr:
         self._port: str = port
         self._subprocess: subprocess.Popen = None
 
-    def start(self, *args, **kwargs):
+    def run(self, *args, **kwargs):
         # TODO Super Adresse
         recv_and_disp_stream()
 
