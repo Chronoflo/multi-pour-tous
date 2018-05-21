@@ -1,3 +1,4 @@
+from modules.handyfunctions import get_modules_path, os_adapt
 from modules.myTk import *
 import socket
 import threading
@@ -97,7 +98,7 @@ class Fenetre_Connexion(MyFrame):
         self.pack(fill='both', expand=1)
 
         # Creation du cadre du logo #
-        self.logo = tk.PhotoImage(file="logo.png")
+        self.logo = tk.PhotoImage(file=get_modules_path() + os_adapt("/logo.png"))
         self.logo = self.logo.subsample(2)
         self.cadre_logo = tk.Canvas(self)
         self.cadre_logo.create_image(225, 0, image=self.logo, anchor="n")

@@ -6,5 +6,4 @@ pywin32
 #cyordereddict
 PySDL2
 #ffmpeg-python
-numpy
-construct
+#construct

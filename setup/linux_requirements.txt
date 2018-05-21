@@ -2,10 +2,10 @@
 pillow
 # Xlib
 # pyautogui
-OrderedSet
+#OrderedSet
 # cyordereddict
 PySDL2
-ffmpeg-python
-numpy
-construct
+#ffmpeg-python
+#numpy
+#construct
 

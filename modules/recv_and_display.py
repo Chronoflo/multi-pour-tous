@@ -1,6 +1,8 @@
 #!usr/bin/python3.6
 # -*- coding: <utf-8> -*-
 import subprocess
+from time import sleep
+
 from modules.const import stream_addr, stream_port
 
 try:
@@ -10,7 +12,6 @@ try:
     import sdl2.ext
     from sdl2 import *
     from sdl2.ext import colorpalettes
-    from construct import *
 except ImportError as e:
     from modules.easydependencies import handle_importerror
     handle_importerror(e)
@@ -21,7 +22,6 @@ except ImportError as e:
     import sdl2.ext
     from sdl2 import *
     from sdl2.ext import colorpalettes
-    from construct import *
 
 
 kb_state = SDL_GetKeyboardState(None)
@@ -71,11 +71,11 @@ class Stream:
     def __init__(self, on_kbupdt=None):
         self._disp_proc = None
         self.running = False
-        self.pressed_key = set()
+        self.pressed_keys = set()
         self.on_kb = on_kbupdt
 
     def recv_and_disp(self, address=stream_addr, port=stream_port, soft_name="The Pong Game",
-                             on_kbupdt=None):
+                             on_kbupdt=None, enable_display=True):
         """
         Affiche un stream vidéo reçu par udp.
 
@@ -87,12 +87,12 @@ class Stream:
         """
         if on_kbupdt is not None:
             self.on_kb = on_kbupdt
-
-        self._disp_proc = subprocess.Popen(
-             to_command(
-                 'ffmpeg -re -f mpegts -i udp://{}:{} -f sdl2 "{}"'.format(
-                    address, port, soft_name
-                 )), stdin=subprocess.PIPE)
+        if enable_display:
+            self._disp_proc = subprocess.Popen(
+                 to_command(
+                     'ffmpeg -re -f mpegts -i udp://{}:{} -f sdl2 "{}"'.format(
+                        address, port, soft_name
+                     )), stdin=subprocess.PIPE, shell=True)
         setup_third_party()
         sdl2.ext.init()
 
@@ -132,26 +132,34 @@ class Stream:
         self.running = True
         while self.running:
             # Vérifie que l'affichage à distance est bien actif, sinon quitte
-            if self._disp_proc.poll() is not None:
-                self.running = False
+            if self._disp_proc is not None:
+                if self._disp_proc.poll() is not None:
+                    self.running = False
             evnts = sdl2.ext.get_events()
             for event in evnts:
                 if event.type == SDL_QUIT:
                     self.running = False
                     break
                 if event.type == sdl2.SDL_KEYDOWN:
-                    self.pressed_key.add(event.key.keysym.sym)
-                    if self.on_kb is not None:
-                        self.on_kb(self.pressed_key)
+                    prev_pressed_keys = set(self.pressed_keys)
+                    self.pressed_keys.add(event.key.keysym.sym)
+                    if self.pressed_keys.difference(prev_pressed_keys):
+                        print("lol")
+                        if self.on_kb is not None:
+                            self.on_kb(self.pressed_keys)
                 elif event.type == sdl2.SDL_KEYUP:
-                    self.pressed_key.remove(event.key.keysym.sym)
-                    if self.on_kb is not None:
-                        self.on_kb(self.pressed_key)
+                    prev_pressed_keys = set(self.pressed_keys)
+                    self.pressed_keys.remove(event.key.keysym.sym)
+                    if prev_pressed_keys.difference(self.pressed_keys):
+                        if self.on_kb is not None:
+                            self.on_kb(self.pressed_keys)
             SDL_Delay(50)
+            sleep(0)
 
         SDL_DestroyWindow(sdlwindow)
         SDL_Quit()
-        self._disp_proc.kill()
+        if self._disp_proc is not None:
+            self._disp_proc.kill()
         return 0
 
     def stop(self):
@@ -164,7 +172,7 @@ class Stream:
 
 if __name__ == '__main__':
     stream = Stream()
-    stream.recv_and_disp()
+    stream.recv_and_disp(enable_display=False)
 
 
 
