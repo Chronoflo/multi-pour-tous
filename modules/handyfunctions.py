@@ -108,6 +108,7 @@ class HandyIndexGenerator:
 
 
 class LaunchOnThread(Thread):
+    """Classe qui sert à facilement créer une nouvelle Thread pour lancer une fonction."""
     def __init__(self, func, name=None, daemon=True):
         self._func = func
         if name is not None:
@@ -511,7 +512,7 @@ def make_line(char, end='\n'):
 
 
 def formatted_error(error=traceback.format_exc()):
-    """Retourne une erreur encadrée par des lignes de points."""
+    """Retourne une erreur formattée, encadrée par des lignes de points."""
     # Ajoute un retour à la ligne à la fin de error s'il n'y en a pas déjà un
     if error[-1:] != '\n':
         error += '\n'
@@ -530,18 +531,22 @@ def check_python_version():
 
 
 def safe_launch(func, log, event_log):
-    # noinspection PyBroadException TODO : faire un bon truc :p
-    # try:
-    #     func()
-    # except Exception as e:
-    #     print("Big error : "e)
-    #     log.add(formatted_error(traceback.format_exc()))
-    #     Log.save_all()
-    # finally:
-    #     event_log.add("Fin application.")
-    #     InfiniteTimer.kill_threads()
-    #     Log.final_save_all()
-    func()
+    """Lance l'application en s'assurant que ses logs soient sauvegardés."""
+    # TODO : le faire proprement
+    try:
+        func()
+    except Exception as e:
+        error_msg = str(e)
+        print(error_msg)
+        log.add(formatted_error(error_msg))
+        from time import sleep
+        sleep(2)
+    finally:
+        event_log.add("Fin application.")
+        InfiniteTimer.kill_threads()
+        Log.final_save_all()
+        import sys
+        sys.exit()
 
 
 def main():
