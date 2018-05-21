@@ -10,7 +10,6 @@ try:
     import sdl2.ext
     from sdl2 import *
     from sdl2.ext import colorpalettes
-    from orderedset import OrderedSet
     from construct import *
 except ImportError as e:
     from modules.easydependencies import handle_importerror
@@ -22,7 +21,6 @@ except ImportError as e:
     import sdl2.ext
     from sdl2 import *
     from sdl2.ext import colorpalettes
-    from orderedset import OrderedSet
     from construct import *
 
 

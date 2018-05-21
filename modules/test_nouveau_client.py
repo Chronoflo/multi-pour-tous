@@ -62,7 +62,7 @@ def ecran_connexion():
     fenetre_connexion = MyTkApp()
     fenetre_connexion.title("Client")
     fenetre_connexion.resizable(width=False, height=False)
-    fenetre_connexion.geometry('{}x{}'.format(450, 432))
+    fenetre_connexion.geometry('{}x{}'.format(450, 445))
 
     interface_connexion = Fenetre_Connexion(fenetre_connexion)
     interface_connexion.mainloop()
@@ -105,7 +105,7 @@ class Fenetre_Connexion(MyFrame):
 
         # Creation du cadre de connexion #
         self.fenetre_connexion = MyLabelFrame(self, text=" Connexion ", labelanchor="nw", **kwargs)
-        self.fenetre_connexion.place(x=0, y=282, width=450, height=150)
+        self.fenetre_connexion.place(x=0, y=282, width=450, height=165)
 
         # Creation de la zone de texte "Adresse du serveur" #
         self.texte_adresse_serveur = tk.Label(self.fenetre_connexion, text="Adresse IP du serveur : ")
@@ -115,6 +115,7 @@ class Fenetre_Connexion(MyFrame):
         self.HOST = tk.StringVar()
         self.HOST = tk.Entry(self.fenetre_connexion, textvariable=self.HOST, width=15)
         self.HOST.insert(0, '127.0.0.1')
+        self.HOST.bind("<Return>", lambda e: self.validation_connexion(self.HOST.get(), self.PORT.get()))
         self.HOST.pack()
 
         # Creation du Warning "Adresse du serveur" #
@@ -128,6 +129,7 @@ class Fenetre_Connexion(MyFrame):
         self.PORT = tk.StringVar()
         self.PORT = tk.Entry(self.fenetre_connexion, textvariable=self.PORT, width=6)
         self.PORT.insert(0, '15555')
+        self.PORT.bind("<Return>", lambda e: self.validation_connexion(self.HOST.get(), self.PORT.get()))
         self.PORT.pack()
 
         # Creation du Warning "Port du serveur" #
@@ -260,13 +262,7 @@ class Fenetre_Controle(MyFrame):
 
 
 ### CODE PUR ###
-
 ecran_connexion()
-
-afficher_recv("ok")
-time.sleep(1)
-afficher_send("test")
-
 try:
     tcp.close()
 except NameError:
