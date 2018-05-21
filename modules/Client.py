@@ -19,7 +19,7 @@ from time import time, sleep
 
 from modules import quickTk
 from modules import const
-from modules.const import KEYMSG, MSGKEYSEP, MSGSEP
+
 
 try:
     from modules.myTk import *
@@ -153,7 +153,7 @@ class Application(MyTkApp):
                 if ready_to_write:
                     if msg != "":
                         self._socket.send(msg.encode('utf8'))
-                        if msg[0] != KEYMSG:
+                        if msg[0] != const.KEYMSG:
                             log.add(msg + " a été envoyé.")
                 else:
                     log.add("Échec envoi message : le serveur est indisponible.")
@@ -265,7 +265,7 @@ class IHM(MyFrame):
         msg = const.KEYMSG + const.MSGKEYSEP
         for i in pressed_keys:
             msg += str(i) + const.MSGKEYSEP
-        msg = msg[:-1] + MSGSEP
+        msg = msg[:-1] + const.MSGSEP
         print(msg)
         self._app.send_msg(msg)
 
@@ -486,12 +486,11 @@ def run_app():
     quickTk.center(app)
     app.connect_to_server(ADDRESS, PORT)
     app.mainloop()
-    sys.exit()
 
 
 def main():
     global log
-    log = Log("SuperClient", True, get_modules_path() + "/../logs/log_client.log", 20, save=False)
+    log = Log("SuperClient", True, get_modules_path() + "/../logs/log_client.log", 20)
     global eventLog
     eventLog = Log("SuperClientEvents", False, get_modules_path() + "/../logs/log_client_events.log", 25)
     eventLog.add("Lancement application...")
