@@ -1,6 +1,10 @@
+# SI TU VOIS CA C QUE C LA BONNE VERSION
 from modules.myTk import *
 import socket
 import threading
+import time
+
+programmes = []
 
 class Recv(threading.Thread):
     def __init__(self, ip, port, client):
@@ -10,7 +14,6 @@ class Recv(threading.Thread):
         self.CLIENT = client
         print("[+] Nouveau Thread de reception pour " + self.IP, self.PORT)
     def run(self):
-        print("[-] Connexion de " + self.IP, self.PORT)
         while True:
             self.msg = self.CLIENT.recv(2048)
             self.msg = self.msg.decode()
@@ -123,7 +126,8 @@ class Fenetre_Config(MyFrame):
     def validation(self):
         if len(self.programmes) >= 1:
             self.fenetre_config.destroy()
-            ecran_reduit()
+            global programmes
+            programmes = self.programmes
         else:
             print("Veuillez definir des programmes")
 
@@ -161,20 +165,52 @@ def ecran_reduit():
     interface_reduite = Fenetre_reduite(fenetre_reduite)
     interface_reduite.mainloop()
 
-def demarrage():
-    ecran_selection()
-
-    tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    tcp.settimeout(None)
-    tcp.bind(('', 15555))
-
-    while True:
-        tcp.listen(1)
-        (client, (ip, port)) = tcp.accept()
-        recvThread = Recv(ip, port, client)
-        recvThread.start()
-
+def syntaxe_envoi(data1, data2):
+    data = str(data1) + ", " + str(data2)
+    return data
 
 ### CODE PUR ###
 ecran_selection()
-tcp.close()
+#ecran_reduit()
+
+PORT = 15555
+
+tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+tcp.settimeout(None)
+tcp.bind(('', PORT))
+tcp.listen(1)
+(client, (ip, port)) = tcp.accept()
+
+password = client.recv(22)
+password = password.decode()
+
+if password == "beast wanna say hell'o":
+    recvThread = Recv(ip, port, client) # Demarrage du Thread de reception
+    recvThread.start()
+
+    nb_programmes = int(len(programmes))
+    nb_caracteres_a_envoyer = (nb_programmes - 1)*2
+    for element in programmes:
+        nb_caracteres_a_envoyer = nb_caracteres_a_envoyer + len(element)
+
+    tcp2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    tcp2.connect((ip, PORT))
+
+    data = str(syntaxe_envoi(nb_programmes, nb_caracteres_a_envoyer))
+    data = data.encode()
+
+    tcp2.send(data)
+    print("sent")
+
+    liste_programmes = str(programmes[0])
+    for counter in range (1, len(programmes)):
+        liste_programmes = syntaxe_envoi(liste_programmes, liste_programmes[counter])
+        print(liste_programmes)
+
+#while True:
+#    tcp.listen(1)
+#    (client, (ip, port)) = tcp.accept()
+#    recvThread = Recv(ip, port, client)
+#    recvThread.start()
+
+#tcp.close()

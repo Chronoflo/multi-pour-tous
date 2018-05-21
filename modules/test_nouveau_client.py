@@ -1,3 +1,4 @@
+# SI TU VOIS CA C QUE C LA BONNE VERSION
 from modules.handyfunctions import get_modules_path, os_adapt
 from modules.myTk import *
 import socket
@@ -85,8 +86,20 @@ def ecran_controle():
     interface_controle = Fenetre_Controle(fenetre_controle)
     interface_controle.mainloop()
 
-
 ### Threads ###
+class Recv(threading.Thread):
+    def __init__(self, ip, port, client):
+        threading.Thread.__init__(self)
+        self.IP = str(ip)
+        self.PORT = str(port)
+        self.CLIENT = client
+        print("[+] Nouveau Thread de reception pour " + self.IP, self.PORT)
+    def run(self):
+        while True:
+            self.msg = self.CLIENT.recv(2048)
+            self.msg = self.msg.decode()
+            if self.msg != "":
+                print(self.msg)
 
 
 
@@ -95,6 +108,7 @@ def ecran_controle():
 class Fenetre_Connexion(MyFrame):
     def __init__(self, fenetre, **kwargs):
         MyFrame.__init__(self, fenetre, **kwargs)
+        self.ecran_connexion = fenetre
         self.pack(fill='both', expand=1)
 
         # Creation du cadre du logo #
@@ -180,9 +194,10 @@ class Fenetre_Connexion(MyFrame):
         try:
             global tcp
             tcp.connect((ip, port))
-            data = "hello"
+            data = "beast wanna say hell'o"
             data = data.encode()
             tcp.send(data)
+            self.ecran_connexion.destroy()
             ecran_controle()
         except OSError:
             ecran_serveur_off()
@@ -212,8 +227,9 @@ class Fenetre_Controle(MyFrame):
         self.fenetre_selection = MyLabelFrame(self, text=" Programmes ", labelanchor="nw", **kwargs)
         self.fenetre_selection.pack(fill='both', expand=1)
 
-        # Creation de la liste des programmes # TODO: gerer la reception des programmes disponibles et les mettre dans la liste "programmes"
+        # Creation de la liste des programmes #
         self.liste_prgm = tk.Listbox(self.fenetre_selection, height=5)
+
         programmes = ['programme 1', 'programme 2', 'programme 3', 'programme 4', 'programme 5', 'programme 6', 'programme 7']
         for element in programmes:
             self.liste_prgm.insert(tk.END, element)
@@ -232,6 +248,7 @@ class Fenetre_Controle(MyFrame):
         # Creation de la zone d'ecriture des commandes #
         self.commande = tk.StringVar()
         self.commande = tk.Entry(self.fenetre_controle, textvariable=self.commande, width=30)
+        self.commande.bind("<Return>", lambda e: self.envoi_tcp(self.commande.get()))
         self.commande.grid(column=0, row=0, padx=5, pady=5)
 
         # Creation du bouton d'envoi #
@@ -249,6 +266,8 @@ class Fenetre_Controle(MyFrame):
         self.console.grid(row=1, columnspan=2, padx=5, pady=10, sticky='w')
         self.console.config(yscrollcommand=scrollbar_console.set)
 
+        self.reception_liste_programmes()
+
     def envoi_tcp(self, data):
         if data != "":
             self.console.insert(tk.END, afficher_send(data))
@@ -256,15 +275,23 @@ class Fenetre_Controle(MyFrame):
             tcp.send(data)
             self.commande.delete(first=0, last=999)
 
+    def reception_liste_programmes(self): # TODO
+        tcp2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        tcp2.settimeout(None)
+        tcp2.bind((ip, port))
+        tcp2.listen(1)
+        (client, (ip_serveur, port_socket)) = tcp.accept()
+
+        programmes_recus = tcp2.recv(2048)
+        programmes_recus = programmes_recus.decode()
+        print(programmes_recus)
+
+
+
 
 
 # TODO: Ecran de retour Streaming en UDP
-# TODO: Continuer Threads
 
 
 ### CODE PUR ###
 ecran_connexion()
-try:
-    tcp.close()
-except NameError:
-    pass
